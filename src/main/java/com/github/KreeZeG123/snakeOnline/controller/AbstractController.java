@@ -45,7 +45,7 @@ public abstract class AbstractController {
      * Méthode qui lance le passage automatique des étapes dans le jeu
      */
     public void play() {
-        this.game.launch();
+        // TODO
     }
 
     /**
@@ -55,12 +55,5 @@ public abstract class AbstractController {
         this.game.pause();
     }
 
-    /**
-     * Méthode qui définit la vitesse du jeu
-     * @param speed vitesse en seconde
-     */
-    public void setSpeed(double speed) {
-        this.game.setTime(Math.round(1000 / speed));
-    }
 
 }

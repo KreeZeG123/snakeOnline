@@ -85,29 +85,18 @@ public class ViewSnakeGame extends AbstractView {
         }
 
         String key = "";
-        String player = ""; // Déterminer quel joueur a appuyé
 
         // Gestion des touches ZQSD (joueur 1)
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_Z -> { key = "UP"; player = "Player1"; }
-            case KeyEvent.VK_Q -> { key = "LEFT"; player = "Player1"; }
-            case KeyEvent.VK_S -> { key = "DOWN"; player = "Player1"; }
-            case KeyEvent.VK_D -> { key = "RIGHT"; player = "Player1"; }
-        }
-
-        // Gestion des touches fléchées (joueur 2)
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP -> { key = "UP"; player = "Player2"; }
-            case KeyEvent.VK_LEFT -> { key = "LEFT"; player = "Player2"; }
-            case KeyEvent.VK_DOWN -> { key = "DOWN"; player = "Player2"; }
-            case KeyEvent.VK_RIGHT -> { key = "RIGHT"; player = "Player2"; }
+            case KeyEvent.VK_Z -> { key = "UP"; }
+            case KeyEvent.VK_Q -> { key = "LEFT"; }
+            case KeyEvent.VK_S -> { key = "DOWN"; }
+            case KeyEvent.VK_D -> { key = "RIGHT"; }
         }
 
         // Si une touche pertinente a été pressée, on l'enregistre dans le jeu
-        if (!key.isEmpty() && !player.isEmpty()) {
-            if (this.game instanceof SnakeGame) {
-                ((SnakeGame) this.game).updatePlayerInput(player, key, false);
-            }
+        if (!key.isEmpty() ) {
+            ((ControllerSnakeGame)this.controller).envoyerAction(key);
         }
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SnakeFactory {
 
-    public static Snake createSnake(FeaturesSnake featuresSnake, String IA, SnakeGame snakeGame) {
+    public static Snake createSnake(FeaturesSnake featuresSnake, SnakeGame snakeGame) {
 
         // Copy des positions du Snake
         Position pos = featuresSnake.getPositions().get(0);

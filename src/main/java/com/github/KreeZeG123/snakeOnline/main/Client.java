@@ -2,6 +2,7 @@ package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.controller.ControllerSnakeGame;
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
+import com.github.KreeZeG123.snakeOnline.model.data.ActionData;
 import com.github.KreeZeG123.snakeOnline.model.data.LoginSnakeData;
 import com.github.KreeZeG123.snakeOnline.model.data.RunningGameData;
 import com.github.KreeZeG123.snakeOnline.utils.*;
@@ -12,28 +13,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Client {
 
-    private Gson gson = new Gson();
+    private final Gson GSON = new Gson();
 
     private Socket so;
     private ControllerSnakeGame controller;
+    private ColorSnake clientColor;
 
-    public static void main(String[] args) {
-        /*
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("========== SnakeOnline ==========");
-        System.out.print("IP : ");
-        String ip = scanner.nextLine();
-        System.out.print("Port : ");
-        int port = scanner.nextInt();
-
-        new Client(ip, port);
-        */
-
-        new Client("localhost", 4321);
-    }
+    private PrintWriter sortieVersServeur;
 
     public void gestion_recepetion_in_game() {
         try {
@@ -41,24 +31,40 @@ public class Client {
             String message;
             while (true) {
                 message = entreeDuClient.readLine();
+                //System.out.println("client a reçu : |" + message + "|");
                 if (message == null) {
                     System.out.println("Le serveur a coupé la connexion.");
                     break;
                 }else if (message.equals("fin")) {
+                    this.controller.update(new ArrayList<>(), null);
                     System.out.println("La partie est terminée.");
+                    break;
+                }
+                else if (message.equals("stop")) {
+                    System.out.println("Le serveur a coupé la connexion.");
+                    so.close();
                     break;
                 } else {
                     // Extraction des informations
-                    RunningGameData parsedRunningData = gson.fromJson(message, RunningGameData.class);
+                    RunningGameData parsedRunningData = GSON.fromJson(message, RunningGameData.class);
                     this.controller.update(
                             parsedRunningData.snakes,
                             parsedRunningData.items
                     );
-                    System.out.println(parsedRunningData.snakes.get(0).getPositions().get(0).getX());
                 }
             }
         } catch (IOException e) {
             System.out.println(e);
+        }
+    }
+
+    public void envoyerAction(String action) {
+        try {
+            PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
+            ActionData newActionData = new ActionData(action, this.clientColor);
+            sortie.println(GSON.toJson(newActionData));
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -67,7 +73,7 @@ public class Client {
         try{
             // On se connecte au serveur
             so = new Socket(ip, port);
-            PrintWriter sortieVersServeur = new PrintWriter(so.getOutputStream(), true);
+            this.sortieVersServeur = new PrintWriter(so.getOutputStream(), true);
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
 
             // On envoie un message de connexion
@@ -77,14 +83,14 @@ public class Client {
             String startingInfoJSON = entreeDuClient.readLine();
 
             // Extraction des informations
-            LoginSnakeData parsedLoginData = gson.fromJson(startingInfoJSON, LoginSnakeData.class);
+            LoginSnakeData parsedLoginData = GSON.fromJson(startingInfoJSON, LoginSnakeData.class);
 
             // Création de la map
             InputMap inputMap = new InputMap(parsedLoginData);
-            ColorSnake clientColor = parsedLoginData.clientColor;
+            this.clientColor = parsedLoginData.clientColor;
 
             // Création de l'affichage
-            controller = new ControllerSnakeGame(inputMap, this);
+            this.controller = new ControllerSnakeGame(inputMap, this);
 
             // On crée un thread pour écouter les messages du serveur quand la partie est en cours
             Thread threadEcoute = new Thread(this::gestion_recepetion_in_game);
@@ -96,10 +102,5 @@ public class Client {
         catch (Exception e) {
             System.out.println(e);
         }
-        /* catch (UnknownHostException e) {
-            System.out.println(e);
-        } catch (IOException e) {
-            System.out.println("Aucun serveur n’est rattaché au port ");
-        }*/
     }
 }

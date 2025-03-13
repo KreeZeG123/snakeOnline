@@ -3,6 +3,7 @@ package com.github.KreeZeG123.snakeOnline.model.game;
 import com.github.KreeZeG123.snakeOnline.model.Item;
 import com.github.KreeZeG123.snakeOnline.model.agent.Snake;
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
+import com.github.KreeZeG123.snakeOnline.model.data.RunningGameData;
 import com.github.KreeZeG123.snakeOnline.model.factory.ItemFactory;
 import com.github.KreeZeG123.snakeOnline.model.factory.SnakeFactory;
 import com.github.KreeZeG123.snakeOnline.utils.*;
@@ -37,39 +38,35 @@ public class SnakeGame extends Game {
      */
     private Boolean aucunMur = null;
 
-    /**
-     * La liste des stratégies pour chaque snake
-     */
-    private final ArrayList<String> snakeStrategies;
 
     /**
      * Gestion des input des joueurs pour la stratégie controlable
      */
     private final Map<String, PlayerInput> playerInputs;
 
-    /**
-     * Nombre de joeurs (snake controlable) sans la partie
-     */
-    private int nbPlayers;
+    private int numberOfPlayers;
 
     /**
      * Constructeur de la classe Game
      *
      * @param maxturn le nombre de tours maximum
-     * @param time    le temps de pause entre chaque tour en ms
      */
-    public SnakeGame(int maxturn, long time, InputMap map, ArrayList<String> snakeStrategies) {
-        super(maxturn, time);
+    public SnakeGame(int maxturn, InputMap map) {
+        super(maxturn);
         this.map = map;
-        this.nbPlayers = 0;
-        this.snakeStrategies = snakeStrategies;
+        this.numberOfPlayers = map.getStart_snakes().size();
 
         this.initializeGame();
 
+
         // Gestiopn des inputs
         this.playerInputs = new HashMap<>();
-        this.playerInputs.put("Player1", new PlayerInput("", true));
-        this.playerInputs.put("Player2", new PlayerInput("", true));
+        for (int i = 0; i < this.numberOfPlayers; i++) {
+            this.playerInputs.put(
+                    ColorSnake.values()[i].name(),
+                    new PlayerInput("", true)
+            );
+        }
     }
 
     /**
@@ -78,36 +75,22 @@ public class SnakeGame extends Game {
     public void init() {
         this.isRunning = false;
         this.turn = 0;
-        this.nbPlayers = 0;
         for (PlayerInput playerInput : this.playerInputs.values()) {
             playerInput.setUsed(true);
         }
         initializeGame();
-        this.propertyChangeSupport.firePropertyChange("turns", -1, 0);
     }
 
     @Override
     public void initializeGame() {
-        // Gère le cas où aucune stratégie n'est spécifié
-        if (this.snakeStrategies == null) {
-            ArrayList<String> snakeStrategies = new ArrayList<>();
-        }
         int nbOfSnake = this.map.getStart_snakes().size();
-        if (this.snakeStrategies.size() < nbOfSnake) {
-            this.snakeStrategies.clear();
-            for (int i = 0; i < nbOfSnake; i++) {
-                // Utilise des strategie composite (focus pomme quand petit, focus snake quand plus grand et evite sickness)
-                snakeStrategies.add("CompositeA*");
-            }
-        }
 
         // Initialization des snakes
         this.snakeAgents = new ArrayList<>();
         ArrayList<FeaturesSnake> startSnakes = this.map.getStart_snakes();
         for (int i = 0; i < nbOfSnake; i++) {
             FeaturesSnake featuresSnake = startSnakes.get(i);
-            String strategie = this.snakeStrategies.get(i);
-            snakeAgents.add(SnakeFactory.createSnake(featuresSnake, strategie, this));
+            snakeAgents.add(SnakeFactory.createSnake(featuresSnake, this));
         }
         // Initialization des items
         this.items = new ArrayList<>();
@@ -118,7 +101,7 @@ public class SnakeGame extends Game {
 
     @Override
     public void takeTurn() {
-        System.out.println("Tour "+this.turn+" du jeu en cours");
+        //System.out.println("Tour "+this.turn+" du jeu en cours");
         for (Snake snake : snakeAgents) {
             snake.makeAction();
             Position newPos = Utils.movePosition(
@@ -443,11 +426,37 @@ public class SnakeGame extends Game {
         return playerInputs.get(player);
     }
 
-    public int getNbPlayers() {
-        return this.nbPlayers;
-    }
 
-    public void addPlayer() {
-        this.nbPlayers++;
+    public RunningGameData getGameData() {
+        // Créer les nouveaux featuresSnakes
+        ArrayList<FeaturesSnake> featuresSnakes = new ArrayList<>();
+        for (Snake snake : this.getSnakeAgents()) {
+            featuresSnakes.add(
+                    new FeaturesSnake(
+                            snake.getPositions(),
+                            snake.getLastAction(),
+                            snake.getColorSnake(),
+                            snake.getInvincibleTime() > 0,
+                            snake.getSickTime() > 0
+                    )
+            );
+        }
+
+        // Créer les nouveaux featuresItems
+        ArrayList<FeaturesItem> featuresItems = new ArrayList<>();
+        for (Item item : this.getItems()) {
+            featuresItems.add(
+                    new FeaturesItem(
+                            item.getX(),
+                            item.getY(),
+                            item.getItemType()
+                    )
+            );
+        }
+
+        return new RunningGameData(
+                featuresItems,
+                featuresSnakes
+        );
     }
 }

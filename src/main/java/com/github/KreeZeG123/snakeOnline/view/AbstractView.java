@@ -1,6 +1,7 @@
 package com.github.KreeZeG123.snakeOnline.view;
 
 import com.github.KreeZeG123.snakeOnline.controller.AbstractController;
+import com.github.KreeZeG123.snakeOnline.controller.ControllerSnakeGame;
 import com.github.KreeZeG123.snakeOnline.model.game.Game;
 
 import javax.swing.*;

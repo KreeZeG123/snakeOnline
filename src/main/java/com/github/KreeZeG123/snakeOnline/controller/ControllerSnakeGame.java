@@ -25,7 +25,7 @@ public class ControllerSnakeGame extends AbstractController {
      */
     public ControllerSnakeGame(InputMap map, Client client) {
         super();
-
+        this.client = client;
 
         // Initialisation de l'affichage
         panel = new PanelSnakeGame(map.getSizeX(), map.getSizeY(), map.get_walls(), map.getStart_snakes(), map.getStart_items() );
@@ -61,6 +61,10 @@ public class ControllerSnakeGame extends AbstractController {
     // Méthode qui est appelée quand l'utilisateur met pause ou unpause via la touche ECHAPPE
     public void pauseUnpauseFromUser() {
         //this.viewCommand.pauseUnpause();
+    }
+
+    public void envoyerAction(String action) {
+        this.client.envoyerAction(action);
     }
 
     public Game getGame() {

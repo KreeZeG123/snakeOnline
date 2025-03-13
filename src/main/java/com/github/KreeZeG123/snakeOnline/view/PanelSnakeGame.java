@@ -317,9 +317,13 @@ public class PanelSnakeGame extends JPanel{
 
 
 	public void updateInfoGame( ArrayList<FeaturesSnake> featuresSnakes , ArrayList<FeaturesItem> featuresItems) {
-		
-		this.featuresSnakes = featuresSnakes;
-		this.featuresItems = featuresItems;
+
+		if (featuresSnakes != null) {
+			this.featuresSnakes = featuresSnakes;
+		}
+		if (featuresItems != null) {
+			this.featuresItems = featuresItems;
+		}
 
 	}
 

@@ -14,8 +14,7 @@ public class Snake {
     private int invincibleTime;
     private int sickTime;
     private boolean dead;
-    private SnakeGame game;
-    private String playerName;
+    private final SnakeGame game;
 
     public Snake(ArrayList<Position> positions, AgentAction lastAction, ColorSnake color, SnakeGame game) {
         this.positions = positions;
@@ -23,15 +22,6 @@ public class Snake {
         this.colorSnake = color;
         this.dead = false;
         this.game = game;
-    }
-
-    public Snake(ArrayList<Position> positions, AgentAction lastAction, ColorSnake color, SnakeGame game, String playerName) {
-        this.positions = positions;
-        this.lastAction = lastAction;
-        this.colorSnake = color;
-        this.dead = false;
-        this.game = game;
-        this.playerName = playerName;
     }
 
     public void move(Position newPos) {
@@ -49,7 +39,43 @@ public class Snake {
     }
 
     public void makeAction() {
-        //
+        // Initialiser l'action à effectuer avec la dernière action par défaut
+        AgentAction action = this.getLastAction();
+
+        // Récupérer les informations de la dernière touche pressée pour ce joueur
+        PlayerInput input = ((SnakeGame) this.game).getPlayerInput(this.colorSnake.name());
+
+        // Si une touche a été pressée
+        if (input != null && input.getLastKey() != null) {
+            // Si l'input n'a pas déjà été utilisé
+            if (!input.getUsed()) {
+                // Récupérer l'action correspondante à la touche pressée
+                switch (input.getLastKey()) {
+                    case "UP" -> {
+                        input.setUsed(true);
+                        action = AgentAction.MOVE_UP;
+                    }
+                    case "DOWN" -> {
+                        input.setUsed(true);
+                        action = AgentAction.MOVE_DOWN;
+                    }
+                    case "LEFT" -> {
+                        input.setUsed(true);
+                        action = AgentAction.MOVE_LEFT;
+                    }
+                    case "RIGHT" -> {
+                        input.setUsed(true);
+                        action = AgentAction.MOVE_RIGHT;
+                    }
+                    default -> {
+                        // Si aucune touche valide n'a été pressée, continuer avec la dernière action
+                        action = this.getLastAction();
+                    }
+                }
+            }
+        }
+
+        this.game.moveAgent(this, action);
     }
 
     public ArrayList<Position> getPositions() {
