@@ -69,9 +69,9 @@ public class Client {
     }
 
     public Client(String ip, int port) {
-
         try{
             // On se connecte au serveur
+            System.out.println("clietn");
             so = new Socket(ip, port);
             this.sortieVersServeur = new PrintWriter(so.getOutputStream(), true);
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
@@ -102,5 +102,9 @@ public class Client {
         catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    public static void main(String[] args) {
+        new Client("172.20.42.192",4321);
     }
 }
