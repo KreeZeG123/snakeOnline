@@ -1,4 +1,4 @@
-package com.github.KreeZeG123.snakeOnline.model.data;
+package com.github.KreeZeG123.snakeOnline.model.dto.snakeGame;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
 import com.github.KreeZeG123.snakeOnline.utils.ColorSnake;
@@ -8,7 +8,7 @@ import com.github.KreeZeG123.snakeOnline.utils.Position;
 
 import java.util.ArrayList;
 
-public class LoginSnakeData {
+public class GameStartDTO extends SnakeGameDTO {
 
     public final int width;
     public final int height;
@@ -17,7 +17,7 @@ public class LoginSnakeData {
     public final ArrayList<FeaturesSnake> startSnakes;
     public final ColorSnake clientColor;
 
-    public LoginSnakeData(int width, int height, ArrayList<Position> walls, ArrayList<FeaturesItem> startItems, ArrayList<FeaturesSnake> startSnakes, ColorSnake clientColor) {
+    public GameStartDTO(int width, int height, ArrayList<Position> walls, ArrayList<FeaturesItem> startItems, ArrayList<FeaturesSnake> startSnakes, ColorSnake clientColor) {
         this.width = width;
         this.height = height;
         this.walls = walls;
@@ -26,7 +26,7 @@ public class LoginSnakeData {
         this.clientColor = clientColor;
     }
 
-    public LoginSnakeData(InputMap map, ColorSnake clientColor) {
+    public GameStartDTO(InputMap map, ColorSnake clientColor) {
         this.width = map.getSizeX();
         this.height = map.getSizeY();
         this.walls = new ArrayList<>();

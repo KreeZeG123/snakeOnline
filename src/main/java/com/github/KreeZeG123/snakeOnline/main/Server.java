@@ -1,18 +1,19 @@
 package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
-import com.github.KreeZeG123.snakeOnline.model.data.ActionData;
-import com.github.KreeZeG123.snakeOnline.model.data.LoginSnakeData;
-import com.github.KreeZeG123.snakeOnline.model.data.RunningGameData;
+import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.SnakeActionDTO;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
 import com.github.KreeZeG123.snakeOnline.model.game.SnakeGame;
 import com.github.KreeZeG123.snakeOnline.utils.*;
 import com.google.gson.Gson;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,7 +33,7 @@ public class Server {
     private AtomicInteger nbJoueurs = new AtomicInteger(0);
     private Gson gson = new Gson();
 
-    private RunningGameData runningGameData;
+    private GameUpdateDTO gameUpdateDTO;
 
     private SnakeGame snakeGame;
     private int port;
@@ -42,53 +43,70 @@ public class Server {
             while (serverIsOn) {
                 BufferedReader entree = new BufferedReader(new InputStreamReader(so.getInputStream()));
                 PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
-                String message = entree.readLine();
-                System.out.println("server a reçu : |" + message + "|");
-                if (message == null) {
+
+                String receivedMessage = entree.readLine();
+                Protocol receivedProtocol = gson.fromJson(receivedMessage, Protocol.class);
+
+                System.out.println("server a reçu : |" + receivedProtocol.getMessage() + "|");
+                if (receivedMessage == null) {
                     System.out.println("Client déconnecté");
                     clients.remove(so);
                     so.close();
                     break;
-                }
-                else if (message.equals("connexion")) {
-                    if (nbJoueurs.get() < this.max_player) {
-
-                        LoginSnakeData loginSnakeData = new LoginSnakeData(
-                                this.map,
-                                ColorSnake.values()[nbJoueurs.get()]
-                        );
-
-                        // Envoi des informations de connexion
-                        sortie.println(gson.toJson(loginSnakeData));
-
-                        // Incrémentation du nombre de joueurs
-                        nbJoueurs.incrementAndGet();
-
-                    } else {
-                        sortie.println("stop");
-                    }
-                }
-                else if (message.equals("stop")) {
-                    System.out.println("Déconnexion du client");
-                    clients.remove(so);
-                    so.close();
-                } else if (message.equals("stopAll")) {
-                    notifier_clients(message, so);
                 } else {
-                    if (nbJoueurs.get() >= this.max_player) {
+                    switch (receivedProtocol.getMessage()) {
+                        case "SnakeGameClientJoin": {
+                            if (nbJoueurs.get() < this.max_player) {
 
-                        ActionData actionData = gson.fromJson(message, ActionData.class);
+                                GameStartDTO gameStartDTO = new GameStartDTO(
+                                        this.map,
+                                        ColorSnake.values()[nbJoueurs.get()]
+                                );
 
-                        this.snakeGame.updatePlayerInput(
-                                actionData.colorSnake.name(),
-                                actionData.action,
-                                false
-                        );
+                                // Envoi des informations de début de partie
+                                Protocol gameStartProtocol = new Protocol(
+                                        "SnakeGame Server " + so.getLocalAddress(),
+                                        "SnakeGame Client " + so.getInetAddress(),
+                                        (new Date()).toString(),
+                                        "SnakeGameServerStartInfo",
+                                        gameStartDTO
+                                );
+                                sortie.println(gameStartProtocol.serialize());
+
+                                // Incrémentation du nombre de joueurs
+                                nbJoueurs.incrementAndGet();
+
+                            } else {
+                                sortie.println("stop");
+                            }
+                            break;
+                        }
+                        case "SnakeGameClientLeave": {
+                            System.out.println("Déconnexion du client");
+                            clients.remove(so);
+                            so.close();
+                            break;
+                        }
+                        case "SnakeGameClientNewAction": {
+                            if (nbJoueurs.get() >= this.max_player) {
+
+                                // Extraction des informations
+                                SnakeActionDTO snakeActionDTO = receivedProtocol.getData();
+
+                                this.snakeGame.updatePlayerInput(
+                                        snakeActionDTO.colorSnake.name(),
+                                        snakeActionDTO.action,
+                                        false
+                                );
+                            }
+                            break;
+                        }
                     }
+
                 }
             }
-        } catch (IOException e) {
-            System.out.println("problème\n"+e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -96,7 +114,14 @@ public class Server {
         serverIsOn = false;
         try {
             serverIsOn = false;
-            notifier_clients("stop",null);
+            Protocol serverStopProtocol = new Protocol(
+                    null,
+                    null,
+                    (new Date()).toString(),
+                    "SnakeGameServerStop",
+                    null
+            );
+            notifier_clients(serverStopProtocol,null);
             sleep(1000);
             serveurSocket.close();
         } catch (IOException e) {
@@ -106,13 +131,15 @@ public class Server {
         }
     }
 
-    public void notifier_clients(String message, Socket emetteur) {
+    public void notifier_clients(Protocol protocol, Socket emetteur) {
         for (Socket so : clients) {
             if (so != emetteur) {
                 new Thread(() -> {
                     try {
                         PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
-                        sortie.println(message);
+                        protocol.setSender("SnakeGame Server " + so.getLocalAddress());
+                        protocol.setReceiver("SnakeGame Client " + so.getInetAddress());
+                        sortie.println(protocol.serialize());
                     } catch (IOException e) {
                         System.out.println("problème\n"+e);
                     }
@@ -134,12 +161,26 @@ public class Server {
                     this.snakeGame.step();
                     if (this.snakeGame.gameContinue()) {
                         // Prévenir les clients de la mise à jour
-                        notifier_clients(gson.toJson(this.snakeGame.getGameData()), null);
+                        Protocol snakGameUpdateProtocol = new Protocol(
+                                null,
+                                null,
+                                (new Date()).toString(),
+                                "SnakeGameServerUpdate",
+                                this.snakeGame.getGameData()
+                        );
+                        notifier_clients(snakGameUpdateProtocol, null);
                     }
                     else {
                         gameIsFinished = true;
                         // Prévenir les clients de la fin de la partie
-                        notifier_clients("fin", null);
+                        Protocol snakeGameEndProtocol = new Protocol(
+                                null,
+                                null,
+                                (new Date()).toString(),
+                                "SnakeGameServerEndGame",
+                                null
+                        );
+                        notifier_clients(snakeGameEndProtocol, null);
                     }
                 } else {
                     if (gameIsFinished) {
@@ -156,7 +197,7 @@ public class Server {
         }
     }
 
-    public Server(InputMap map, MainServer server) {
+    public Server(InputMap map) {
         this.map = map;
         this.max_player = map.getStart_snakes().size();
         serverIsOn = true;
@@ -168,13 +209,14 @@ public class Server {
 
         // Ouvre le serveur
         try {
-            serveurSocket = new ServerSocket(0); // on crée le serveur
+            serveurSocket = new ServerSocket(4321); // on crée le serveur
             this.port = serveurSocket.getLocalPort();
             this.ip = serveurSocket.getInetAddress().getHostAddress();
             System.out.println(this.ip);
-            System.out.println(this.ip);
+            System.out.println(this.port);
             server.setIPPort(this.port,this.ip);
             server.setServerInitialization(this.ip, this.port);
+
             System.out.println("Serveur mis en place");
 
             // Boucle pour accepter les nouvelles connexions (arrêt avec stop et stopAll)

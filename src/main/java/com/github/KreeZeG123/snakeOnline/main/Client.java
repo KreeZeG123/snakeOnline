@@ -2,9 +2,10 @@ package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.controller.ControllerSnakeGame;
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
-import com.github.KreeZeG123.snakeOnline.model.data.ActionData;
-import com.github.KreeZeG123.snakeOnline.model.data.LoginSnakeData;
-import com.github.KreeZeG123.snakeOnline.model.data.RunningGameData;
+import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.SnakeActionDTO;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
 import com.github.KreeZeG123.snakeOnline.utils.*;
 import com.google.gson.Gson;
 
@@ -14,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Client {
 
@@ -28,41 +30,59 @@ public class Client {
     public void gestion_recepetion_in_game() {
         try {
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
-            String message;
             while (true) {
-                message = entreeDuClient.readLine();
-                //System.out.println("client a reçu : |" + message + "|");
-                if (message == null) {
+                String receivedMessage = entreeDuClient.readLine();
+                Protocol receivedProtocol = GSON.fromJson(receivedMessage, Protocol.class);
+
+                System.out.println("client a reçu : |" + receivedProtocol.getMessage() + "|");
+                if (receivedMessage == null) {
                     System.out.println("Le serveur a coupé la connexion.");
-                    break;
-                }else if (message.equals("fin")) {
-                    this.controller.update(new ArrayList<>(), null);
-                    System.out.println("La partie est terminée.");
-                    break;
-                }
-                else if (message.equals("stop")) {
-                    System.out.println("Le serveur a coupé la connexion.");
-                    so.close();
                     break;
                 } else {
-                    // Extraction des informations
-                    RunningGameData parsedRunningData = GSON.fromJson(message, RunningGameData.class);
-                    this.controller.update(
-                            parsedRunningData.snakes,
-                            parsedRunningData.items
-                    );
+                    switch (receivedProtocol.getMessage()) {
+                        case "SnakeGameServerEndGame" : {
+                            this.controller.update(new ArrayList<>(), null, null);
+                            System.out.println("La partie est terminée.");
+                            break;
+                        }
+                        case "SnakeGameServerStop" : {
+                            System.out.println("Le serveur a coupé la connexion.");
+                            so.close();
+                            break;
+                        }
+                        case "SnakeGameServerUpdate" : {
+                            // Extraction des informations
+                            GameUpdateDTO gameUpdateDTO = receivedProtocol.getData();
+
+                            this.controller.update(
+                                    gameUpdateDTO.snakes,
+                                    gameUpdateDTO.items,
+                                    gameUpdateDTO.snakeInfos
+                            );
+                            break;
+                        }
+                    }
                 }
             }
-        } catch (IOException e) {
-            System.out.println(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     public void envoyerAction(String action) {
         try {
             PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
-            ActionData newActionData = new ActionData(action, this.clientColor);
-            sortie.println(GSON.toJson(newActionData));
+
+            SnakeActionDTO newSnakeActionDTO = new SnakeActionDTO(action, this.clientColor);
+            Protocol snakeActionProtocol = new Protocol(
+                    "SnakeGame Client " + so.getLocalAddress(),
+                    "SnakeGame Server " + so.getInetAddress(),
+                    (new Date()).toString(),
+                    "SnakeGameClientNewAction",
+                    newSnakeActionDTO
+            );
+
+            sortie.println(snakeActionProtocol.serialize());
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -71,23 +91,31 @@ public class Client {
     public Client(String ip, int port) {
         try{
             // On se connecte au serveur
-            System.out.println("clietn");
+            System.out.println("client");
             so = new Socket(ip, port);
             this.sortieVersServeur = new PrintWriter(so.getOutputStream(), true);
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
 
             // On envoie un message de connexion
-            sortieVersServeur.println("connexion");
+            Protocol joinGameProtocol = new Protocol(
+                    "SnakeGame Client " + so.getLocalAddress(),
+                    "SnakeGame Server " + so.getInetAddress(),
+                    (new Date()).toString(),
+                    "SnakeGameClientJoin",
+                    null
+            );
+            sortieVersServeur.println(joinGameProtocol.serialize());
 
             // On attend la réponse du serveur
-            String startingInfoJSON = entreeDuClient.readLine();
+            String startGameJSON = entreeDuClient.readLine();
 
             // Extraction des informations
-            LoginSnakeData parsedLoginData = GSON.fromJson(startingInfoJSON, LoginSnakeData.class);
+            Protocol startGameProtocol = GSON.fromJson(startGameJSON, Protocol.class);
+            GameStartDTO startGameDTO = startGameProtocol.getData();
 
             // Création de la map
-            InputMap inputMap = new InputMap(parsedLoginData);
-            this.clientColor = parsedLoginData.clientColor;
+            InputMap inputMap = new InputMap(startGameDTO);
+            this.clientColor = startGameDTO.clientColor;
 
             // Création de l'affichage
             this.controller = new ControllerSnakeGame(inputMap, this);

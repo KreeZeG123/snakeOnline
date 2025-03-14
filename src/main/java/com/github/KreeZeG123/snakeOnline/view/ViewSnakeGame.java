@@ -22,7 +22,6 @@ public class ViewSnakeGame extends AbstractView {
 
     protected PanelSnakeGame panelSnakeGame;
     private final JLabel snakeInfoLabel;  // Label pour afficher les informations des serpents
-    private final Map<String, SnakeInfo> infosSnakes; // Map pour stocker les serpents vivants et morts
 
 
 
@@ -31,9 +30,6 @@ public class ViewSnakeGame extends AbstractView {
 
         this.panelSnakeGame = panel;
         this.jFrame.add(this.panelSnakeGame);
-
-        // Initialisation observeur
-        //this.game.addPropertyChangeListener("turns", this);
 
         // Configuration des touches
         setupKeyListeners();
@@ -47,9 +43,6 @@ public class ViewSnakeGame extends AbstractView {
 
         // Ajouter la barre d'informations au dessus de panelSnakeGame
         this.jFrame.add(infoBar, BorderLayout.NORTH);
-
-        // Initialiser l'ensemble des serpents vivants et morts
-        this.infosSnakes = new HashMap<>();
     }
 
     // Configuration des KeyListeners pour détecter les touches
@@ -101,34 +94,7 @@ public class ViewSnakeGame extends AbstractView {
     }
 
     // Méthode qui update
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        // Créer les nouveaux featuresSnakes
-        ArrayList<FeaturesSnake> featuresSnakes = new ArrayList<>();
-        for (Snake snake : ((SnakeGame)this.game).getSnakeAgents()) {
-            featuresSnakes.add(
-                    new FeaturesSnake(
-                            snake.getPositions(),
-                            snake.getLastAction(),
-                            snake.getColorSnake(),
-                            snake.getInvincibleTime() > 0,
-                            snake.getSickTime() > 0
-                    )
-            );
-        }
-
-        // Créer les nouveaux featuresItems
-        ArrayList<FeaturesItem> featuresItems = new ArrayList<>();
-        for (Item item : ((SnakeGame) this.game).getItems()) {
-            featuresItems.add(
-                    new FeaturesItem(
-                            item.getX(),
-                            item.getY(),
-                            item.getItemType()
-                    )
-            );
-        }
-
+    public void updateView( ArrayList<FeaturesSnake> featuresSnakes , ArrayList<FeaturesItem> featuresItems, String snakeInfos) {
         // Update le panel graphique
         this.panelSnakeGame.updateInfoGame(
                 featuresSnakes,
@@ -136,7 +102,9 @@ public class ViewSnakeGame extends AbstractView {
         );
 
         // Mettre à jour la barre d'information
-        updateSnakeInfo();
+        if (snakeInfos != null) {
+            this.snakeInfoLabel.setText(snakeInfos);
+        }
 
         this.jFrame.repaint();
     }
@@ -144,84 +112,6 @@ public class ViewSnakeGame extends AbstractView {
     // Méthode pour fermer la fenêtre
     public void closeWindow() {
         this.jFrame.dispatchEvent(new WindowEvent(this.jFrame, WindowEvent.WINDOW_CLOSING));
-    }
-
-    // Structure pour conserver les informations des serpents (couleur et score)
-    private class SnakeInfo {
-        String color;
-        int score;
-        boolean active;
-
-        SnakeInfo(String color, int score) {
-            this.color = color;
-            this.score = score;
-            this.active = true;
-        }
-
-        public void setActive(boolean active) {
-            this.active = active;
-        }
-    }
-
-    private void updateSnakeInfo() {
-        StringBuilder snakeInfos = new StringBuilder("Snake Info: ");
-
-        // Accéder aux serpents et leurs points via controller
-        SnakeGame snakeGame = (SnakeGame) this.game;
-        List<Snake> snakeAgents = snakeGame.getSnakeAgents();
-
-        // Vérifier qu'il y a des serpents à afficher
-        if (snakeAgents.isEmpty() && this.infosSnakes.isEmpty()) {
-            snakeInfos.append("No snakes available.");
-        } else {
-            // Mettre à jour les serpents vivants et leurs informations (couleur et score)
-            for (Snake snake : snakeAgents) {
-                String snakeColor = snake.getColorSnake().toString();  // Récupère la couleur du serpent
-                int points = snake.getPoints(); // Récupère les points du serpent
-
-                // Si le serpent est nouveau, on l'ajoute à la map infosSnakes
-                if (!infosSnakes.containsKey(snakeColor)) {
-                    infosSnakes.put(snakeColor, new SnakeInfo(snakeColor, points));
-                }
-                // Sinon on met à jour le score
-                else {
-                    this.infosSnakes.get(snakeColor).score = points;
-                    this.infosSnakes.get(snakeColor).setActive(true); // Assurer que le serpent est marqué comme vivant
-                }
-            }
-
-            // Parcours de tous les serpents dans infosSnakes
-            for (SnakeInfo snakeInfo : this.infosSnakes.values()) {
-                // Si le serpent est encore vivant
-                if (isSerpentPresentDansSnakeAgents(snakeInfo.color, snakeAgents)) {
-                    snakeInfos.append(snakeInfo.color)
-                            .append(" - Points: ")
-                            .append(snakeInfo.score)
-                            .append(" | ");
-                } else {
-                    // Le serpent est mort, mettre à jour son statut
-                    snakeInfo.setActive(false);
-                    snakeInfos.append(snakeInfo.color)
-                            .append(" (DEAD) ")
-                            .append(" - Points: ")
-                            .append(snakeInfo.score)
-                            .append(" | ");
-                }
-            }
-        }
-
-        // Mettre à jour le label
-        this.snakeInfoLabel.setText(snakeInfos.toString());
-    }
-
-
-    private boolean isSerpentPresentDansSnakeAgents(String snakeColor, List<Snake> snakeAgents) {
-        for (Snake snake : snakeAgents) {
-            if (snake.getColorSnake().toString().equals(snakeColor)) {
-                return true;  // Le serpent est encore présent
-            }
-        }
-        return false;  // Le serpent n'est plus dans snakeAgents
     }
 
 
