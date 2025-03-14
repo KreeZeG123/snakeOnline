@@ -9,6 +9,7 @@ import com.github.KreeZeG123.snakeOnline.utils.*;
 import com.google.gson.Gson;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -19,7 +20,7 @@ import static java.lang.Thread.sleep;
 
 public class Server {
 
-    private final int MAX_PLAYERS = 2;
+    private int max_player;
 
     private InputMap map;
 
@@ -28,13 +29,14 @@ public class Server {
     private Vector<Thread> threadsClients;
     private ServerSocket serveurSocket;
 
-    private AtomicInteger nbJoeurs = new AtomicInteger(0);
+    private AtomicInteger nbJoueurs = new AtomicInteger(0);
     private Gson gson = new Gson();
 
     private RunningGameData runningGameData;
 
     private SnakeGame snakeGame;
-
+    private int port;
+    private String ip;
     public void code_gestion_client(Socket so) {
         try {
             while (serverIsOn) {
@@ -49,18 +51,18 @@ public class Server {
                     break;
                 }
                 else if (message.equals("connexion")) {
-                    if (nbJoeurs.get() < MAX_PLAYERS) {
+                    if (nbJoueurs.get() < this.max_player) {
 
                         LoginSnakeData loginSnakeData = new LoginSnakeData(
                                 this.map,
-                                ColorSnake.values()[nbJoeurs.get()]
+                                ColorSnake.values()[nbJoueurs.get()]
                         );
 
                         // Envoi des informations de connexion
                         sortie.println(gson.toJson(loginSnakeData));
 
                         // Incrémentation du nombre de joueurs
-                        nbJoeurs.incrementAndGet();
+                        nbJoueurs.incrementAndGet();
 
                     } else {
                         sortie.println("stop");
@@ -73,7 +75,7 @@ public class Server {
                 } else if (message.equals("stopAll")) {
                     notifier_clients(message, so);
                 } else {
-                    if (nbJoeurs.get() >= MAX_PLAYERS) {
+                    if (nbJoueurs.get() >= this.max_player) {
 
                         ActionData actionData = gson.fromJson(message, ActionData.class);
 
@@ -128,7 +130,7 @@ public class Server {
         while (serverIsOn) {
             try {
                 // S'il y a assez de joueurs
-                if (nbJoeurs.get() == MAX_PLAYERS && !gameIsFinished) {
+                if (nbJoueurs.get() == this.max_player && !gameIsFinished) {
                     this.snakeGame.step();
                     if (this.snakeGame.gameContinue()) {
                         // Prévenir les clients de la mise à jour
@@ -154,9 +156,9 @@ public class Server {
         }
     }
 
-    public Server(int port, InputMap map) {
+    public Server(InputMap map, MainServer server) {
         this.map = map;
-
+        this.max_player = map.getStart_snakes().size();
         serverIsOn = true;
         clients = new Vector<Socket>();
 
@@ -166,7 +168,13 @@ public class Server {
 
         // Ouvre le serveur
         try {
-            serveurSocket = new ServerSocket(port); // on crée le serveur
+            serveurSocket = new ServerSocket(0); // on crée le serveur
+            this.port = serveurSocket.getLocalPort();
+            this.ip = serveurSocket.getInetAddress().getHostAddress();
+            System.out.println(this.ip);
+            System.out.println(this.port);
+            server.setIPPort(this.port,this.ip);
+            server.setServerInitialization(this.ip, this.port);
             System.out.println("Serveur mis en place");
 
             // Boucle pour accepter les nouvelles connexions (arrêt avec stop et stopAll)
@@ -188,5 +196,13 @@ public class Server {
             System.out.println("problème\n"+e);
         }
 
+    }
+
+    public int getPort(){
+        return this.port;
+    }
+
+    public String getIP(){
+        return this.ip;
     }
 }
