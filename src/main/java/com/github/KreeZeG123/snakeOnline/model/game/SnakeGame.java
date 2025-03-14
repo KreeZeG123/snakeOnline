@@ -3,10 +3,11 @@ package com.github.KreeZeG123.snakeOnline.model.game;
 import com.github.KreeZeG123.snakeOnline.model.Item;
 import com.github.KreeZeG123.snakeOnline.model.agent.Snake;
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
-import com.github.KreeZeG123.snakeOnline.model.data.RunningGameData;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
 import com.github.KreeZeG123.snakeOnline.model.factory.ItemFactory;
 import com.github.KreeZeG123.snakeOnline.model.factory.SnakeFactory;
 import com.github.KreeZeG123.snakeOnline.utils.*;
+import com.github.KreeZeG123.snakeOnline.view.ViewSnakeGame;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +47,8 @@ public class SnakeGame extends Game {
 
     private int numberOfPlayers;
 
+    private final Map<String, SnakeInfo> infosSnakes; // Map pour stocker les serpents vivants et morts
+
     /**
      * Constructeur de la classe Game
      *
@@ -55,6 +58,9 @@ public class SnakeGame extends Game {
         super(maxturn);
         this.map = map;
         this.numberOfPlayers = map.getStart_snakes().size();
+
+        // Initialiser l'ensemble des serpents vivants et morts
+        this.infosSnakes = new HashMap<>();
 
         this.initializeGame();
 
@@ -427,7 +433,7 @@ public class SnakeGame extends Game {
     }
 
 
-    public RunningGameData getGameData() {
+    public GameUpdateDTO getGameData() {
         // Créer les nouveaux featuresSnakes
         ArrayList<FeaturesSnake> featuresSnakes = new ArrayList<>();
         for (Snake snake : this.getSnakeAgents()) {
@@ -454,9 +460,69 @@ public class SnakeGame extends Game {
             );
         }
 
-        return new RunningGameData(
+        return new GameUpdateDTO(
                 featuresItems,
-                featuresSnakes
+                featuresSnakes,
+                getSnakesInfos()
         );
+    }
+
+    public String getSnakesInfos() {
+        StringBuilder snakeInfos = new StringBuilder("Snake Info : ");
+
+        // Accéder aux serpents et leurs points via controller
+        List<Snake> snakeAgents = this.getSnakeAgents();
+
+        // Vérifier qu'il y a des serpents à afficher
+        if (snakeAgents.isEmpty() && this.infosSnakes.isEmpty()) {
+            snakeInfos.append("No snakes available.");
+            return snakeInfos.toString();
+        } else {
+            // Mettre à jour les serpents vivants et leurs informations (couleur et score)
+            for (Snake snake : snakeAgents) {
+                String snakeColor = snake.getColorSnake().toString();  // Récupère la couleur du serpent
+                int points = snake.getPoints(); // Récupère les points du serpent
+
+                // Si le serpent est nouveau, on l'ajoute à la map infosSnakes
+                if (!infosSnakes.containsKey(snakeColor)) {
+                    infosSnakes.put(snakeColor, new SnakeInfo(snakeColor, points));
+                }
+                // Sinon on met à jour le score
+                else {
+                    this.infosSnakes.get(snakeColor).score = points;
+                    this.infosSnakes.get(snakeColor).setActive(true); // Assurer que le serpent est marqué comme vivant
+                }
+            }
+
+            // Parcours de tous les serpents dans infosSnakes
+            for (SnakeInfo snakeInfo : this.infosSnakes.values()) {
+                // Si le serpent est encore vivant
+                if (isSerpentPresentDansSnakeAgents(snakeInfo.color, snakeAgents)) {
+                    snakeInfos.append(snakeInfo.color)
+                            .append(" - Points: ")
+                            .append(snakeInfo.score)
+                            .append(" | ");
+                } else {
+                    // Le serpent est mort, mettre à jour son statut
+                    snakeInfo.setActive(false);
+                    snakeInfos.append(snakeInfo.color)
+                            .append(" (DEAD) ")
+                            .append(" - Points: ")
+                            .append(snakeInfo.score)
+                            .append(" | ");
+                }
+            }
+
+            return snakeInfos.toString();
+        }
+    }
+
+    private boolean isSerpentPresentDansSnakeAgents(String snakeColor, List<Snake> snakeAgents) {
+        for (Snake snake : snakeAgents) {
+            if (snake.getColorSnake().toString().equals(snakeColor)) {
+                return true;  // Le serpent est encore présent
+            }
+        }
+        return false;  // Le serpent n'est plus dans snakeAgents
     }
 }

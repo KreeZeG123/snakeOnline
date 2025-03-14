@@ -1,12 +1,13 @@
-package com.github.KreeZeG123.snakeOnline.model.data;
+package com.github.KreeZeG123.snakeOnline.model.dto.snakeGame;
 
+import com.github.KreeZeG123.snakeOnline.model.dto.DTOInterface;
 import com.github.KreeZeG123.snakeOnline.utils.ColorSnake;
 
-public class ActionData {
+public class SnakeActionDTO extends SnakeGameDTO {
     public String action;
     public ColorSnake colorSnake;
 
-    public ActionData(String action, ColorSnake colorSnake) {
+    public SnakeActionDTO(String action, ColorSnake colorSnake) {
         this.action = action;
         this.colorSnake = colorSnake;
     }

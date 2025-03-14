@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.KreeZeG123.snakeOnline.model.data.LoginSnakeData;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
 import com.github.KreeZeG123.snakeOnline.utils.*;
 
 public class InputMap implements Serializable {
@@ -27,7 +27,7 @@ public class InputMap implements Serializable {
 	private BufferedReader buffer;
 	ColorSnake[] colorSnake = ColorSnake.values();
 
-	public InputMap(LoginSnakeData parsedLoginData) {
+	public InputMap(GameStartDTO parsedLoginData) {
 		this.size_x = parsedLoginData.width;
 		this.size_y = parsedLoginData.height;
 		this.walls = new boolean[parsedLoginData.width][parsedLoginData.height];

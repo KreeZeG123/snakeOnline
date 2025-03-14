@@ -314,8 +314,6 @@ public class PanelSnakeGame extends JPanel{
 		
 	}
 
-
-
 	public void updateInfoGame( ArrayList<FeaturesSnake> featuresSnakes , ArrayList<FeaturesItem> featuresItems) {
 
 		if (featuresSnakes != null) {
@@ -326,7 +324,6 @@ public class PanelSnakeGame extends JPanel{
 		}
 
 	}
-
 
 	public int getSizeX() {
 		return sizeX;

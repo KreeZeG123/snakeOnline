@@ -6,9 +6,8 @@ import com.github.KreeZeG123.snakeOnline.model.game.Game;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeListener;
 
-public abstract class AbstractView implements PropertyChangeListener {
+public abstract class AbstractView {
 
     /**
      * Le jeu auquel la vue est relié

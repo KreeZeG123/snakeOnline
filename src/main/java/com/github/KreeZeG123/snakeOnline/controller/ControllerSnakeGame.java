@@ -50,12 +50,12 @@ public class ControllerSnakeGame extends AbstractController {
         this.viewSnakeGame.getjFrame().setLocation(dx, dy);
     }
 
-    public void update(ArrayList<FeaturesSnake> snakes, ArrayList<FeaturesItem> items) {
-        this.panel.updateInfoGame(
+    public void update(ArrayList<FeaturesSnake> snakes, ArrayList<FeaturesItem> items, String snakeInfos) {
+        this.viewSnakeGame.updateView(
             snakes,
-            items
+            items,
+            snakeInfos
         );
-        this.panel.repaint();
     }
 
     // Méthode qui est appelée quand l'utilisateur met pause ou unpause via la touche ECHAPPE
