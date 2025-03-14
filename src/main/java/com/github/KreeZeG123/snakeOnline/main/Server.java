@@ -172,7 +172,7 @@ public class Server {
             this.port = serveurSocket.getLocalPort();
             this.ip = serveurSocket.getInetAddress().getHostAddress();
             System.out.println(this.ip);
-            System.out.println(this.port);
+            System.out.println(this.ip);
             server.setIPPort(this.port,this.ip);
             server.setServerInitialization(this.ip, this.port);
             System.out.println("Serveur mis en place");
