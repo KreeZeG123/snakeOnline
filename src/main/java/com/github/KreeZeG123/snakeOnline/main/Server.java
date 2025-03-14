@@ -214,6 +214,9 @@ public class Server {
             this.ip = serveurSocket.getInetAddress().getHostAddress();
             System.out.println(this.ip);
             System.out.println(this.port);
+            server.setIPPort(this.port,this.ip);
+            server.setServerInitialization(this.ip, this.port);
+
             System.out.println("Serveur mis en place");
 
             // Boucle pour accepter les nouvelles connexions (arrêt avec stop et stopAll)
