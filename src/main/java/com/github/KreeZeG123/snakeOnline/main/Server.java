@@ -4,10 +4,8 @@ import com.github.KreeZeG123.snakeOnline.model.InputMap;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.SnakeActionDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
-import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
 import com.github.KreeZeG123.snakeOnline.model.game.SnakeGame;
 import com.github.KreeZeG123.snakeOnline.utils.*;
-import com.google.gson.Gson;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -20,49 +18,40 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.Thread.sleep;
 
 public class Server {
-
     private int max_player;
-
     private InputMap map;
-
     private boolean serverIsOn;
-    private Vector<Socket> clients;
+    private Vector<Socket> clientsSocket;
     private Vector<Thread> threadsClients;
     private ServerSocket serveurSocket;
-
     private AtomicInteger nbJoueurs = new AtomicInteger(0);
-    private Gson gson = new Gson();
-
-    private GameUpdateDTO gameUpdateDTO;
-
     private SnakeGame snakeGame;
     private int port;
     private String ip;
+    private Client[] clients;
     public void code_gestion_client(Socket so) {
         try {
-            while (serverIsOn) {
+            while (this.serverIsOn) {
+                System.out.println("Server on");
                 BufferedReader entree = new BufferedReader(new InputStreamReader(so.getInputStream()));
                 PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
-
                 String receivedMessage = entree.readLine();
-                Protocol receivedProtocol = gson.fromJson(receivedMessage, Protocol.class);
-
-                System.out.println("server a reçu : |" + receivedProtocol.getMessage() + "|");
+                Protocol receivedProtocol = Protocol.deserialize(receivedMessage);
                 if (receivedMessage == null) {
                     System.out.println("Client déconnecté");
-                    clients.remove(so);
+                    clientsSocket.remove(so);
+                    stop_serveur();
                     so.close();
                     break;
                 } else {
+                    System.out.println("server a reçu : |" + receivedProtocol.getMessage() + "|");
                     switch (receivedProtocol.getMessage()) {
                         case "SnakeGameClientJoin": {
                             if (nbJoueurs.get() < this.max_player) {
-
                                 GameStartDTO gameStartDTO = new GameStartDTO(
                                         this.map,
                                         ColorSnake.values()[nbJoueurs.get()]
                                 );
-
                                 // Envoi des informations de début de partie
                                 Protocol gameStartProtocol = new Protocol(
                                         "SnakeGame Server " + so.getLocalAddress(),
@@ -83,7 +72,7 @@ public class Server {
                         }
                         case "SnakeGameClientLeave": {
                             System.out.println("Déconnexion du client");
-                            clients.remove(so);
+                            clientsSocket.remove(so);
                             so.close();
                             break;
                         }
@@ -111,9 +100,9 @@ public class Server {
     }
 
     public void stop_serveur() {
-        serverIsOn = false;
         try {
-            serverIsOn = false;
+            System.out.println("Arret du serveur");
+            this.serverIsOn = false;
             Protocol serverStopProtocol = new Protocol(
                     null,
                     null,
@@ -132,7 +121,7 @@ public class Server {
     }
 
     public void notifier_clients(Protocol protocol, Socket emetteur) {
-        for (Socket so : clients) {
+        for (Socket so : clientsSocket) {
             if (so != emetteur) {
                 new Thread(() -> {
                     try {
@@ -151,10 +140,9 @@ public class Server {
     public void running_game(InputMap map) {
         // Création du jeu
         this.snakeGame = new SnakeGame(100, map);
-
         // Boucle de jeu
         boolean gameIsFinished = false;
-        while (serverIsOn) {
+        while (this.serverIsOn) {
             try {
                 // S'il y a assez de joueurs
                 if (nbJoueurs.get() == this.max_player && !gameIsFinished) {
@@ -184,7 +172,8 @@ public class Server {
                     }
                 } else {
                     if (gameIsFinished) {
-                        System.out.println("La partie est terminée.");
+                        System.out.println("Server La partie est terminée.");
+                        stop_serveur();
                     } else {
                         System.out.println("En attente de joueurs...");
                     }
@@ -197,11 +186,11 @@ public class Server {
         }
     }
 
-    public Server(InputMap map) {
+    public Server(InputMap map, MainServer mainServer) {
         this.map = map;
         this.max_player = map.getStart_snakes().size();
-        serverIsOn = true;
-        clients = new Vector<Socket>();
+        this.serverIsOn = true;
+        clientsSocket = new Vector<Socket>();
 
         // Lance le thread pour le jeu (temporaire)
         Thread runningGameThread = new Thread(() -> running_game(map));
@@ -209,27 +198,25 @@ public class Server {
 
         // Ouvre le serveur
         try {
-            serveurSocket = new ServerSocket(4321); // on crée le serveur
+            serveurSocket = new ServerSocket(0); // on crée le serveur
             this.port = serveurSocket.getLocalPort();
             this.ip = serveurSocket.getInetAddress().getHostAddress();
-            System.out.println(this.ip);
-            System.out.println(this.port);
-            server.setIPPort(this.port,this.ip);
-            server.setServerInitialization(this.ip, this.port);
-
+            System.out.println("IP du serveur : " + this.ip);
+            System.out.println("POrt du serveur : " + this.port);
+            mainServer.setServerInitialization(this.ip, this.port);
             System.out.println("Serveur mis en place");
 
             // Boucle pour accepter les nouvelles connexions (arrêt avec stop et stopAll)
-            while (serverIsOn) {
+            while (this.serverIsOn) {
                 Socket so = serveurSocket.accept(); // Accepte une nouvelle connexion d'un client
-                clients.add(so); // Ajoute le client à la liste des clients
+                clientsSocket.add(so); // Ajoute le client à la liste des clients
                 // Crée un thread pour chaque écouter chaque client
                 Thread threadClient = new Thread(() -> code_gestion_client(so));
                 threadClient.start();
             }
 
         } catch (SocketException e) {
-            if (!serverIsOn) {
+            if (!this.serverIsOn) {
                 System.out.println("Le serveur a été arrêté.");
             } else {
                 System.out.println("Erreur inattendue : " + e.getMessage());

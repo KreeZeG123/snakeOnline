@@ -2,9 +2,8 @@ package com.github.KreeZeG123.snakeOnline.view;
 
 import com.github.KreeZeG123.snakeOnline.main.Client;
 import com.github.KreeZeG123.snakeOnline.main.MainServer;
-import com.github.KreeZeG123.snakeOnline.main.Server;
-import com.github.KreeZeG123.snakeOnline.model.InputMap;
-import com.github.KreeZeG123.snakeOnline.utils.Partie;
+import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.mainMenu.*;
 
 import javax.smartcardio.Card;
 import javax.swing.*;
@@ -14,29 +13,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import static com.github.KreeZeG123.snakeOnline.view.MapChooser.listMapInFolder;
+import java.util.Date;
+import java.util.Objects;
 
 
 public class MainMenu {
-    public static final int TAILLE_INPUT_X = 300;
-    public static final int TAILLE_INPUT_Y = 40;
-    public static final String ip = "127.0.0.1";
-    public static final int port = 4321;
-    public static final Font inputFont = new Font("Arial", Font.PLAIN, 30);
-    public static final Font titleFont = new Font("Arial", Font.PLAIN, 45);
-    public static final Font subtitleFont = new Font("Arial", Font.PLAIN, 15);
-    MainServer mainServer;
-    Socket socket;
+    private static final int TAILLE_INPUT_X = 300;
+    private static final int TAILLE_INPUT_Y = 40;
+    private static final String ip = "127.0.0.1";
+    private static final int port = 4321;
+    private static final Font inputFont = new Font("Arial", Font.PLAIN, 30);
+    private static final Font titleFont = new Font("Arial", Font.PLAIN, 45);
+    private static final Font subtitleFont = new Font("Arial", Font.PLAIN, 15);
+    private Socket socket;
     private BufferedReader entree;
     private PrintWriter sortie;
-    private String message;
+    private int nbPieces;
+    private String[] cosmetiques;
+    private String userName;
     public MainMenu() throws Exception {
+        this.nbPieces = 0;
+        cosmetiques = new String[3];
         this.socket = new Socket(ip, port);
         this.entree = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.sortie = new PrintWriter(socket.getOutputStream(), true);
@@ -64,15 +63,22 @@ public class MainMenu {
 
         JPanel partyPanel = new JPanel(new GridBagLayout());
 
-        setGBC(gbc);
-        setLoginPanel(loginPanel,cardLayout,cardPanel,gbc,partyPanel);
-        setBackButton(backButton,cardLayout,cardPanel);
-        setRegisterPanel(registerPanel,gbc,backButton,cardLayout,cardPanel);
+        JPanel createServerPanel = new JPanel(new GridBagLayout());
 
+        JPanel profilPanel = new JPanel(new GridBagLayout());
 
         cardPanel.add(loginPanel, "loginPanel");
         cardPanel.add(registerPanel, "registerPanel");
         cardPanel.add(partyPanel, "partyPanel");
+        cardPanel.add(createServerPanel, "createServerPanel");
+        cardPanel.add(profilPanel, "profilPanel");
+
+        setGBC(gbc);
+        setLoginPanel(loginPanel,cardLayout,cardPanel,gbc,partyPanel);
+        setBackButton(backButton,cardLayout,cardPanel);
+        setRegisterPanel(registerPanel,gbc,cardLayout,cardPanel,partyPanel);
+        setCreateServerPanel(createServerPanel,gbc,cardLayout,cardPanel);
+        setProfilPanel(profilPanel,cardLayout,cardPanel,gbc);
 
         frame.setLayout(new BorderLayout());
         frame.add(cardPanel, BorderLayout.CENTER);
@@ -87,7 +93,7 @@ public class MainMenu {
         JLabel titleLabel = new JLabel("Connexion");
         titleLabel.setFont(titleFont);
 
-        JLabel loginLabel = new JLabel("Login");
+        JLabel loginLabel = new JLabel("Nom d'utilisateur");
         loginLabel.setFont(subtitleFont);
 
         JTextField loginField = new JTextField();
@@ -96,7 +102,7 @@ public class MainMenu {
 
         loginField.setFont(inputFont);
 
-        JLabel passwordLabel = new JLabel("Password");
+        JLabel passwordLabel = new JLabel("Mot de passe");
         passwordLabel.setFont(subtitleFont);
 
         JPasswordField passwordField = new JPasswordField();
@@ -111,6 +117,13 @@ public class MainMenu {
         JButton registerButton = new JButton("S'inscrire");
         registerButton.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
 
+        registerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "registerPanel");
+            }
+        });
+
         JLabel erreurInforamtionsLabel = new JLabel("Informations de connexion éronnées");
         erreurInforamtionsLabel.setFont(subtitleFont);
         erreurInforamtionsLabel.setForeground(Color.RED);
@@ -120,19 +133,23 @@ public class MainMenu {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sortie.println("connexion");
-                sortie.println("true");
-                String reponse = null;
+                LoginDTO loginDTO = new LoginDTO(Arrays.toString(passwordField.getPassword()),loginField.getText());
+                Protocol sendingProtocol =  new Protocol("MainMenuClient", "MainServer",(new Date()).toString(),"MainMenuClientDemandeConnexion",loginDTO);
+                sortie.println(sendingProtocol.serialize());
+                String messageRecu = null;
                 try {
-                    reponse = entree.readLine();
-                    if(reponse.equals("connexion acceptée")){
-                        setPartyPanel(partyPanel,gbc);
+                    messageRecu = entree.readLine();
+                    Protocol receivedProtocol = Protocol.deserialize(messageRecu);
+                    InfoUserDTO infoUserDTO = receivedProtocol.getData();
+                    if(receivedProtocol.getMessage().equals("ConnexionAcceptée")){
+                        System.out.println("Connexion acceptée");
+                        nbPieces = infoUserDTO.getNbPieces();
+                        cosmetiques = infoUserDTO.getCosmetiques();
+                        userName = infoUserDTO.getUserName();
+                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel);
                         cardLayout.show(cardPanel, "partyPanel");
-                    }else{
-                        erreurInforamtionsLabel.setVisible(true);
                     }
-
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -171,7 +188,7 @@ public class MainMenu {
         gbc.anchor = GridBagConstraints.CENTER; //
     }
 
-    public void setRegisterPanel(JPanel registerPanel, GridBagConstraints gbc, JButton backButton, CardLayout cardLayout, JPanel cardPanel){
+    public void setRegisterPanel(JPanel registerPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel, JPanel partyPanel){
 
         JLabel titleLabel2 = new JLabel("Register");
         titleLabel2.setFont(titleFont);
@@ -197,24 +214,39 @@ public class MainMenu {
         JButton registerButton2 = new JButton("S'inscrire");
         registerButton2.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
 
+        JLabel erreurInforamtionsLabel2 = new JLabel("Login already used");
+        erreurInforamtionsLabel2.setFont(subtitleFont);
+        erreurInforamtionsLabel2.setForeground(Color.RED);
+        erreurInforamtionsLabel2.setVisible(false);
+
         registerButton2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sortie.println("register");
-                String reponse = null;
                 try {
-                    reponse = entree.readLine();
-                    System.out.println(reponse);
-                    if(reponse.equals("register accepté")){
+                    RegisterDTO registerDTO = new RegisterDTO(loginField2.getText(), Arrays.toString(passwordField2.getPassword()));
+                    Protocol sendingProtocolRegister = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeEnregistrement",registerDTO);
+                    sortie.println(sendingProtocolRegister.serialize());
+                    String messageRecu = entree.readLine();
+                    Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
+                    InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
+                    if(receivedProtocolRegister.getMessage().equals("EnregistrementAccepté")){
+                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel);
+                        userName = infoUserDTO.getUserName();
                         cardLayout.show(cardPanel, "partyPanel");
-                    }else{
-                        System.out.println("non");
+                    }else if(receivedProtocolRegister.getMessage().equals("EnregistrementRefusé")){
+                        erreurInforamtionsLabel2.setVisible(true);
                     }
-                } catch (IOException ex) {
+
+                } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
             }
         });
+
+        JButton backButton = new JButton("Retour");
+        backButton.setFont(subtitleFont);
+
+        backButton.addActionListener(actionEvent -> cardLayout.show(cardPanel, "loginPanel"));
 
         registerPanel.add(backButton, gbc);
         registerPanel.add(titleLabel2, gbc);
@@ -225,21 +257,16 @@ public class MainMenu {
         registerPanel.add(registerButton2,gbc);
     }
 
-    public void setPartyPanel(JPanel partyPanel, GridBagConstraints gbc) throws IOException {
+    public void setPartyPanel(JPanel partyPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel) throws IOException {
 
-        JLabel titleLabel3 = new JLabel("List of servers");
+        JLabel titleLabel3 = new JLabel("Liste des serveurs");
         titleLabel3.setFont(titleFont);
+        DefaultListModel<String> serverListDisplay = new DefaultListModel<>();
+        ArrayList<String[]> serverListInfo = new ArrayList<>();
+        demandeServerList(serverListInfo,serverListDisplay);
 
-        sortie.println("get list party");
-        String reponse = entree.readLine();
-        DefaultListModel<String> arrayParties = new DefaultListModel<>();
-        while(!reponse.equals("null")){
-            System.out.println("bien");
-            arrayParties.addElement(reponse);
-            reponse = entree.readLine();
-        }
 
-        JList<String> serversList = new JList<>(arrayParties);
+        JList<String> serversList = new JList<>(serverListDisplay);
         serversList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         serversList.setFont(inputFont);
 
@@ -250,38 +277,110 @@ public class MainMenu {
         connexionServerButton.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
 
         connexionServerButton.addActionListener(actionEvent -> {
-            if(serversList.getSelectedValue() != null){
-                serversList.getSelectedIndex();
-                String ip = arrayParties.getElementAt(3);
-                String port = arrayParties.getElementAt(4);
-                new Client(ip, (Integer.parseInt(port)));
+            int selectedIndex = serversList.getSelectedIndex();
+            if(selectedIndex != -1){
+                new Client(serverListInfo.get(selectedIndex)[0], Integer.parseInt(serverListInfo.get(selectedIndex)[1]));
             }
         });
 
-        JButton createNewServerButton = new JButton("Create a server");
+        JButton createNewServerButton = new JButton("Créer un serveur");
         createNewServerButton.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
         createNewServerButton.addActionListener(actionEvent -> {
-            sortie.println("creer serveur");
-            sortie.println("medium_alone_no_walls.lay");
-            try {
-                String reponse_creation = entree.readLine();
-                if(reponse_creation.equals("creation reussi")){
-                    String ip = entree.readLine();
-                    String port = entree.readLine();
-                    new Client(ip, Integer.parseInt(port));
-                }
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
+            cardLayout.show(cardPanel,"createServerPanel");
         });
 
-        partyPanel.add(createNewServerButton, gbc);
+
+        JButton profilButton = new JButton("Profil");
+        profilButton.setFont(subtitleFont);
+
+        profilButton.addActionListener(actionEvent -> {
+            cardLayout.show(cardPanel,"profilPanel");
+        });
+
+        partyPanel.add(profilButton);
         partyPanel.add(titleLabel3, gbc);
         partyPanel.add(serversScrollPane, gbc);
         partyPanel.add(connexionServerButton, gbc);
+        partyPanel.add(createNewServerButton, gbc);
     }
+
+    public void setCreateServerPanel(JPanel createServerPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel){
+        JButton backButton = new JButton("Retour") ;
+        File dossierCible = new File("src/main/resources/layouts");
+        File[] files = dossierCible.listFiles();
+        int tailleGrid = (int) Math.sqrt(Objects.requireNonNull(dossierCible.listFiles()).length);
+        JPanel serverListPanel = new JPanel(new GridLayout(tailleGrid,tailleGrid));
+        JButton[] mapListButton = new JButton[Objects.requireNonNull(dossierCible.listFiles()).length];
+        for(int i = 0; i < Objects.requireNonNull(files).length; i++){
+            mapListButton[i] = new JButton(files[i].getName());
+            mapListButton[i].setFont(new Font("Arial", Font.PLAIN, 20));
+            int finalI = i;
+            mapListButton[i].addActionListener(actionEvent -> {
+                try {
+                    NewServerDTO newServerDTO = new NewServerDTO("layouts/"+ files[finalI].getName());
+                    Protocol sendingProtocol = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"CreationServeur",newServerDTO);
+                    sortie.println(sendingProtocol.serialize());
+                    String messageRecu = entree.readLine();
+                    Protocol receivedProtocol = Protocol.deserialize(messageRecu);
+                    InfoServerDTO infoServerDTO = receivedProtocol.getData();
+                    System.out.println("Port du serveur crée : " + infoServerDTO.getPort());
+                    new Client(infoServerDTO.getIp(),infoServerDTO.getPort());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            serverListPanel.add(mapListButton[i]);
+        }
+
+        backButton.addActionListener(actionEvent -> {
+            cardLayout.show(cardPanel,"partyPanel");
+        });
+        JLabel choixMapLabel = new JLabel("Veuillez choisir une map :");
+        choixMapLabel.setFont(titleFont);
+        createServerPanel.add(choixMapLabel, gbc);
+        createServerPanel.add(serverListPanel, gbc);
+        createServerPanel.add(backButton,gbc);
+    }
+
+    public void demandeServerList(ArrayList<String[]> serverListInfo,DefaultListModel<String> serverListDisplay){
+        Protocol sendingProtocolGameList = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeServerList",null);
+        sortie.println(sendingProtocolGameList.serialize());
+        String messageRecu;
+        try{
+            messageRecu = entree.readLine();
+            Protocol receivedProtocol = Protocol.deserialize(messageRecu);
+            ServerListDTO serverListDTO = receivedProtocol.getData();
+            serverListInfo = serverListDTO.getServerList();
+            for(int i = 0; i < serverListInfo.size(); i++){
+                serverListDisplay.set(i,serverListInfo.get(i)[0] + "IP : " + serverListInfo.get(i)[1] + "Port : " + serverListInfo.get(i)[2]);
+            }
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setProfilPanel(JPanel profilPanel, CardLayout cardLayout,JPanel cardPanel, GridBagConstraints gbc){
+        JButton backButton = new JButton("Retour");
+
+        JLabel userNameLabel = new JLabel("Profil de : " + this.userName);
+        userNameLabel.setFont(titleFont);
+
+        JLabel nbPiecesLabel = new JLabel("Nombre de pièces : " + this.nbPieces);
+        nbPiecesLabel.setFont(inputFont);
+
+        JLabel cosmetiquesLabel = new JLabel("Liste des cosmétiques : ");
+        cosmetiquesLabel.setFont(inputFont);
+
+        backButton.addActionListener(actionEvent -> {
+            cardLayout.show(cardPanel,"partyPanel");
+        });
+
+        profilPanel.add(backButton, gbc);
+        profilPanel.add(userNameLabel, gbc);
+        profilPanel.add(nbPiecesLabel,gbc);
+        profilPanel.add(cosmetiquesLabel,gbc);
+    }
+
 
     public static void main(String[] args) throws Exception {
         new MainMenu();

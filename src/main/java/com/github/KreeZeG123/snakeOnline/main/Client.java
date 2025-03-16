@@ -27,13 +27,12 @@ public class Client {
 
     private PrintWriter sortieVersServeur;
 
-    public void gestion_recepetion_in_game() {
+    public void gestion_reception_in_game() {
         try {
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
-            while (true) {
+            while (so!=null && !so.isClosed()) {
                 String receivedMessage = entreeDuClient.readLine();
-                Protocol receivedProtocol = GSON.fromJson(receivedMessage, Protocol.class);
-
+                Protocol receivedProtocol = Protocol.deserialize(receivedMessage);
                 System.out.println("client a reçu : |" + receivedProtocol.getMessage() + "|");
                 if (receivedMessage == null) {
                     System.out.println("Le serveur a coupé la connexion.");
@@ -42,7 +41,7 @@ public class Client {
                     switch (receivedProtocol.getMessage()) {
                         case "SnakeGameServerEndGame" : {
                             this.controller.update(new ArrayList<>(), null, null);
-                            System.out.println("La partie est terminée.");
+                            System.out.println("Mainserver La partie est terminée.");
                             break;
                         }
                         case "SnakeGameServerStop" : {
@@ -91,7 +90,6 @@ public class Client {
     public Client(String ip, int port) {
         try{
             // On se connecte au serveur
-            System.out.println("client");
             so = new Socket(ip, port);
             this.sortieVersServeur = new PrintWriter(so.getOutputStream(), true);
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
@@ -118,10 +116,11 @@ public class Client {
             this.clientColor = startGameDTO.clientColor;
 
             // Création de l'affichage
+
             this.controller = new ControllerSnakeGame(inputMap, this);
 
             // On crée un thread pour écouter les messages du serveur quand la partie est en cours
-            Thread threadEcoute = new Thread(this::gestion_recepetion_in_game);
+            Thread threadEcoute = new Thread(this::gestion_reception_in_game);
             threadEcoute.start();
 
 
