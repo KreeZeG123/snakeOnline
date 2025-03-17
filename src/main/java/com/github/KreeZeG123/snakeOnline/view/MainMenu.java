@@ -350,7 +350,8 @@ public class MainMenu {
             messageRecu = entree.readLine();
             Protocol receivedProtocol = Protocol.deserialize(messageRecu);
             ServerListDTO serverListDTO = receivedProtocol.getData();
-            serverListInfo = serverListDTO.getServerList();
+            System.out.println(serverListDTO.getServerList().get(0));
+            serverListInfo = new ArrayList<>(serverListDTO.getServerList());
             for(int i = 0; i < serverListInfo.size(); i++){
                 serverListDisplay.set(i,serverListInfo.get(i)[0] + "IP : " + serverListInfo.get(i)[1] + "Port : " + serverListInfo.get(i)[2]);
             }

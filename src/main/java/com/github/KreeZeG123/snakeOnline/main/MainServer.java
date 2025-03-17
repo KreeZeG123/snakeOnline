@@ -91,8 +91,8 @@ public class MainServer {
                     case "MainMenuClientDemandeServerList" :
                         System.out.println("Demande de liste de serveurs");
                         //Demande au serveur web la liste des serveurs
-                        ArrayList<String[]> serverArrayList = new ArrayList<>(this.serverList);
-                        ServerListDTO serverListDTO = new ServerListDTO(serverArrayList);
+                        ServerListDTO serverListDTO = new ServerListDTO();
+                        serverListDTO.addServer(serverList);
                         Protocol sendingProtocolDemandeServerList = new Protocol("MainServer","MainMenuClient", (new Date()).toString(), "RetourServerList", serverListDTO);
                         sortie.println(sendingProtocolDemandeServerList.serialize());
                         break;
@@ -132,9 +132,12 @@ public class MainServer {
             new Server(inputMap, this);
         }).start();
         waitForServerInitialization();
-        String[] newServerInfo = new String[]{"", this.ipServer, String.valueOf(this.portServer)};
+        String[] newServerInfo = new String[]{"Server", this.ipServer, String.valueOf(this.portServer)};
         synchronized (this.serverList) {
             this.serverList.add(newServerInfo);
+            for(int i =0;i<serverList.size();i++){
+                System.out.println("Server " + i + " " + serverList.get(i)[1]);
+            }
         }
         this.portServer = 0;
         this.ipServer = null;
@@ -150,7 +153,6 @@ public class MainServer {
                 e.printStackTrace();
             }
         }
-        System.out.println("waitforServer  ip et port " + this.ipServer + " " + this.portServer);
     }
 
     public synchronized void setServerInitialization(String ip, Integer port) {
