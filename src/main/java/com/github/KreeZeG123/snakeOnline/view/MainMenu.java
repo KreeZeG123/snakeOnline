@@ -279,7 +279,7 @@ public class MainMenu {
         connexionServerButton.addActionListener(actionEvent -> {
             int selectedIndex = serversList.getSelectedIndex();
             if(selectedIndex != -1){
-                new Client(serverListInfo.get(selectedIndex)[0], Integer.parseInt(serverListInfo.get(selectedIndex)[1]));
+                new Client(serverListInfo.get(selectedIndex)[1], Integer.parseInt(serverListInfo.get(selectedIndex)[2]));
             }
         });
 
@@ -350,10 +350,11 @@ public class MainMenu {
             messageRecu = entree.readLine();
             Protocol receivedProtocol = Protocol.deserialize(messageRecu);
             ServerListDTO serverListDTO = receivedProtocol.getData();
-            System.out.println(serverListDTO.getServerList().get(0));
-            serverListInfo = new ArrayList<>(serverListDTO.getServerList());
+            System.out.println(receivedProtocol);
+            serverListInfo.clear();
+            serverListInfo.addAll(serverListDTO.getServerList());
             for(int i = 0; i < serverListInfo.size(); i++){
-                serverListDisplay.set(i,serverListInfo.get(i)[0] + "IP : " + serverListInfo.get(i)[1] + "Port : " + serverListInfo.get(i)[2]);
+                serverListDisplay.add(i,serverListInfo.get(i)[0] + "IP : " + serverListInfo.get(i)[1] + "Port : " + serverListInfo.get(i)[2]);
             }
         }catch(Exception e){
             throw new RuntimeException(e);
