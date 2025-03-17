@@ -8,10 +8,9 @@ import com.github.KreeZeG123.snakeOnline.model.game.SnakeGame;
 import com.github.KreeZeG123.snakeOnline.utils.*;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -200,9 +199,9 @@ public class Server {
         try {
             serveurSocket = new ServerSocket(0); // on crée le serveur
             this.port = serveurSocket.getLocalPort();
-            this.ip = serveurSocket.getInetAddress().getHostAddress();
+            this.ip = getLocalAddress();
             System.out.println("IP du serveur : " + this.ip);
-            System.out.println("POrt du serveur : " + this.port);
+            System.out.println("Port du serveur : " + this.port);
             mainServer.setServerInitialization(this.ip, this.port);
             System.out.println("Serveur mis en place");
 
@@ -225,6 +224,26 @@ public class Server {
             System.out.println("problème\n"+e);
         }
 
+    }
+
+    public static String getLocalAddress() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface ni = interfaces.nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    // Exclure les adresses de boucle locale et IPv6
+                    if (!addr.isLoopbackAddress() && addr instanceof Inet4Address) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "0.0.0.0"; // Retour par défaut si aucune adresse valide n'est trouvée
     }
 
     public int getPort(){
