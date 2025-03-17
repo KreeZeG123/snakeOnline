@@ -197,7 +197,7 @@ public class Server {
         }
     }
 
-    public Server(InputMap map) {
+    public Server(InputMap map, MainServer mainServer) {
         this.map = map;
         this.max_player = map.getStart_snakes().size();
         serverIsOn = true;
