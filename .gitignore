@@ -1,38 +1,41 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+### Web (Eclipse Java EE) ###
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
+# Garder la configuration Eclipse
+!Web/.project
+!Web/.classpath
+!Web/.settings/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# Ignorer les fichiers temporaires et caches Eclipse
+Web/.apt_generated
+Web/.factorypath
+Web/.springBeans
+Web/.sts4-cache
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Ignorer les fichiers de compilation et de sortie
+Web/WEB-INF/classes/
+Web/build/
+Web/target/
 
-### VS Code ###
-.vscode/
+### Reseau (Maven sous IntelliJ IDEA) ###
 
-### Mac OS ###
-.DS_Store
+# Dossier target (compilation et artefacts Maven)
+Reseau/target/
+Reseau/out/
+
+# Garder les fichiers de configuration IntelliJ IDEA (dossier .idea et fichiers .iml)
+!Reseau/.idea/
+!Reseau/*.iml
+
+# Ignorer les fichiers spécifiques générés par IntelliJ IDEA, mais garder les configurations importantes
+Reseau/.idea/modules.xml
+Reseau/.idea/jarRepositories.xml
+Reseau/.idea/compiler.xml
+Reseau/.idea/libraries/
+
+# Ignorer les fichiers temporaires spécifiques à IntelliJ
+Reseau/.idea/workspace.xml
+Reseau/.idea/dictionaries/
+Reseau/.idea/shelf/
+
+# Ne pas ignorer le wrapper Maven
+!Reseau/.mvn/wrapper/maven-wrapper.jar
