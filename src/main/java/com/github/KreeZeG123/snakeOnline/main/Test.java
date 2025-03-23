@@ -9,7 +9,7 @@ public class Test {
         new Thread(() -> {
             try {
                 InputMap map = new InputMap("layouts/battlefield.lay");
-                new Server(map);
+                new Server(map, null);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

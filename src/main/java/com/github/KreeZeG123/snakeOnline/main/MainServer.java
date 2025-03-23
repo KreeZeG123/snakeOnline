@@ -1,8 +1,6 @@
 package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
-import com.github.KreeZeG123.snakeOnline.model.data.ActionData;
-import com.github.KreeZeG123.snakeOnline.model.data.LoginSnakeData;
 import com.github.KreeZeG123.snakeOnline.utils.ColorSnake;
 import com.github.KreeZeG123.snakeOnline.utils.Partie;
 
