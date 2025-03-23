@@ -5,6 +5,9 @@ import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
 import com.github.KreeZeG123.snakeOnline.model.dto.mainMenu.*;
 import com.github.KreeZeG123.snakeOnline.utils.Game;
 import com.google.gson.Gson;
+import com.github.KreeZeG123.snakeOnline.utils.ColorSnake;
+import com.github.KreeZeG123.snakeOnline.utils.Partie;
+
 
 import javax.management.StringValueExp;
 import java.io.BufferedReader;
