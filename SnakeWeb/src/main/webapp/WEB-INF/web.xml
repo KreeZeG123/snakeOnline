@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+  <display-name>SnakeWeb</display-name>
+  <servlet>
+  	<servlet-name>firstServlet</servlet-name>
+  	<servlet-class>servlets.FirstServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>firstServlet</servlet-name>
+  	<url-pattern>/main</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>servletProfil</servlet-name>
+  	<servlet-class>servlets.ServletProfil</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>servletProfil</servlet-name>
+  	<url-pattern>/profil</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>servletBoutique</servlet-name>
+  	<servlet-class>servlets.ServletBoutique</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>servletBoutique</servlet-name>
+  	<url-pattern>/boutique</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>servletClassement</servlet-name>
+  	<servlet-class>servlets.ServletClassement</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>servletClassement</servlet-name>
+  	<url-pattern>/classement</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>servletConnexion</servlet-name>
+  	<servlet-class>servlets.ServletConnexion</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>servletConnexion</servlet-name>
+  	<url-pattern>/connexion</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>servletAccueil</servlet-name>
+  	<servlet-class>servlets.ServletAccueil</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>servletAccueil</servlet-name>
+  	<url-pattern>/accueil</url-pattern>
+  </servlet-mapping>
+  
+   <servlet>
+  	<servlet-name>servletRegister</servlet-name>
+  	<servlet-class>servlets.ServletRegister</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+  	<servlet-name>servletRegister</servlet-name>
+  	<url-pattern>/inscription</url-pattern>
+  </servlet-mapping>
+  
+
+  
+  <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <include-prelude>/WEB-INF/tagslib.jsp</include-prelude>
+        </jsp-property-group>
+    </jsp-config>
+</web-app>
+
+
+    

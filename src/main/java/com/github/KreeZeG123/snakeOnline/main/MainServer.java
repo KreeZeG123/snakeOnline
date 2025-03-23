@@ -1,50 +1,58 @@
 package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
+import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.mainMenu.*;
+import com.github.KreeZeG123.snakeOnline.utils.Game;
+import com.google.gson.Gson;
 import com.github.KreeZeG123.snakeOnline.utils.ColorSnake;
 import com.github.KreeZeG123.snakeOnline.utils.Partie;
 
+
+import javax.management.StringValueExp;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 
 public class MainServer {
-    final List<Partie> listeParties;
+    final List<String[]> serverList = new CopyOnWriteArrayList<>();
     private int port;
     private String ip;
+    private int portServer;
+    private String ipServer;
     private boolean serverIsOn;
     private ServerSocket serveurSocket;
     private Vector<Socket> clients;
     private Vector<Thread> threadsClients;
+    private final Gson gson = new Gson();
     public MainServer() throws Exception {
-        this.listeParties = new CopyOnWriteArrayList<>();
         this.clients = new Vector<>();
-        fillListeParties();
         serverIsOn = true;
         try {
             serveurSocket = new ServerSocket(4321); // on crée le serveur
             this.port = serveurSocket.getLocalPort();
             this.ip = serveurSocket.getInetAddress().getHostAddress();
-            System.out.println(this.ip);
-            System.out.println(this.port);
+            System.out.println("IP du main server : " + this.ip);
+            System.out.println("Port du main server : " + this.port);
             System.out.println("Serveur mis en place");
             // Boucle pour accepter les nouvelles connexions (arrêt avec stop et stopAll)
             while (serverIsOn) {
                 Socket so = serveurSocket.accept(); // Accepte une nouvelle connexion d'un client
-                System.out.println("Client accepted");
+                System.out.println("Client accepté");
                 clients.add(so); // Ajoute le client à la liste des clients
                 // Crée un thread pour chaque écouter chaque client
-                Thread threadClient = new Thread(() -> code_gestion_client(so));
-                threadClient.start();
+                new Thread(() -> code_gestion_client(so)).start();
             }
         } catch (SocketException e) {
             if (!serverIsOn) {
@@ -53,7 +61,7 @@ public class MainServer {
                 System.out.println("Erreur inattendue : " + e.getMessage());
             }
         } catch (IOException e) {
-            System.out.println("problème\n"+e);
+            System.out.println("Problème : " + e);
         }
     }
 
@@ -63,78 +71,95 @@ public class MainServer {
                 BufferedReader entree = new BufferedReader(new InputStreamReader(so.getInputStream()));
                 PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
                 String message = entree.readLine();
-                System.out.println("server a reçu : |" + message + "|");
-                if (message == null) {
-                    System.out.println("Client déconnecté");
+                Protocol receivedProtocol = Protocol.deserialize(message);
+                System.out.println("Main server a reçu : |" + message + "|");
+                if(message == null){
+                    System.out.println("Client déconnecté du main server" );
                     clients.remove(so);
                     so.close();
                     break;
-                } else if (message.equals("connexion")) {
-                    System.out.println("Message connexion recu");
-                    String message_informations = entree.readLine();
-                    if(message_informations.equals("true")){
-                        sortie.println("connexion acceptée");
-                    }else{
-                        sortie.println("connexion refusée");
+                }
+                else{
+                switch(receivedProtocol.getMessage()){
+                    case "MainMenuClientDemandeConnexion":
+                        System.out.println("Demande de connexion");
+                        LoginDTO loginDTO = receivedProtocol.getData();
+                        System.out.println("njnn" + loginDTO.getLogin());
+                        ///Verification dans la base données + retour d'informations sur l'utilisateur
+                        String[] cosmetiques = {"Chapeau","Lunettes"};
+                        InfoUserDTO infoUserDTOLogin = new InfoUserDTO(loginDTO.getLogin(), cosmetiques, 10);
+                        Protocol sendingProtocolConnexion =  new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "ConnexionAcceptée", infoUserDTOLogin);
+                        sortie.println(sendingProtocolConnexion.serialize());
+                        break;
+                    case "MainMenuClientDemandeServerList" :
+                        System.out.println("Demande de liste de serveurs");
+                        //Demande au serveur web la liste des serveurs
+                        ServerListDTO serverListDTO = new ServerListDTO();
+                        serverListDTO.addServer(serverList);
+                        Protocol sendingProtocolDemandeServerList = new Protocol("MainServer","MainMenuClient", (new Date()).toString(), "RetourServerList", serverListDTO);
+                        sortie.println(sendingProtocolDemandeServerList.serialize());
+                        break;
+                    case "CreationServeur" :
+                        System.out.println("Creation de serveur");
+                        NewServerDTO newServerDTO = receivedProtocol.getData();
+                        String[] infoServer = creerServeur(newServerDTO.getMap());
+                        InfoServerDTO infoServerDTO = new InfoServerDTO(infoServer[0],infoServer[1],Integer.parseInt(infoServer[2]));
+                        Protocol sendingProtocolCreationServeur = new Protocol("MainServer","MainMenuClicent", (new Date()).toString(), "RetourDemandeCreationServeur",infoServerDTO);
+                        sortie.println(sendingProtocolCreationServeur.serialize());
+                        break;
+                    case "MainMenuClientDemandeEnregistrement" :
+                        System.out.println("Demande d'enregistrement");
+                        RegisterDTO registerDTO = receivedProtocol.getData();
+                        ///Verification du login si il est deja utilisé
+                        InfoUserDTO infoUserDTORegister = new InfoUserDTO(registerDTO.getLogin(),new String[0], 0);
+                        //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
+                        Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementAccepté", infoUserDTORegister);
+                        sortie.println(sendingProtocolRegister.serialize());
+                        break;
+                    case "MainMenuClientDemandeInfoUser" :
+                        System.out.println("Demande informations user");
+                        LoginDTO loginDTODemandeInfo = receivedProtocol.getData();
+                        ///Verification du login si il est deja utilisé
+                        InfoUserDTO infoUserDTODemandeInfo = new InfoUserDTO(loginDTODemandeInfo.getLogin(),new String[0], 0);
+                        System.out.println("huhuihhhuh" + loginDTODemandeInfo.getLogin());
+                        //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
+                        Protocol sendingProtocolDemandeInfoUser = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "RetourDemandeInfoUser", infoUserDTODemandeInfo);
+                        sortie.println(sendingProtocolDemandeInfoUser.serialize());
+                        break;
+                    default :
+                        break;
                     }
-                }else if (message.equals("register")){
-                    System.out.println("Message register recu");
-                    System.out.println("Envoie des données sur le server web");
-                    sortie.println("register accepté");
-                }else if (message.equals("creer serveur")) {
-                    message = entree.readLine();
-                    if(message.equals("medium_alone_no_walls.lay")){
-                        Partie partie = creerServeur(message);
-                        sortie.println(partie.getIp());
-                        sortie.println(partie.getPort());
-                        //listeParties.add(partie.getIp());
-                    }
-                } else if(message.equals("get list party")) {
-                    sortie.println("a");
-                    sortie.println("b");
-                    sortie.println("c");
-                    sortie.println("null");
-                } else if (message.equals("stop")) {
                 }
             }
         } catch (Exception e) {
-            System.out.println("problème\n"+e);
+            System.out.println("Problème : "+e);
         }
     }
 
-    public boolean verificationInformationsConnexion(String login, String password){
-        return true;
-    }
-
-    public boolean inscription(String login, String password){
-        return true;
-    }
-
-    public List<Partie> getListeParties() {
-        return listeParties;
-    }
-
-    public Partie creerServeur(String map) throws Exception {
+    public String[] creerServeur(String map) throws Exception {
         InputMap inputMap;
-        final Partie[] partieResult = new Partie[1];
+        String[] result = new String[3];
         inputMap = new InputMap(map);
 
         new Thread(() -> {
             new Server(inputMap, this);
         }).start();
-
         waitForServerInitialization();
-        Partie partie = new Partie(inputMap, this.port, this.ip);
-        synchronized (this.listeParties) {
-            this.listeParties.add(partie);
+        String[] newServerInfo = new String[]{"Server", this.ipServer, String.valueOf(this.portServer)};
+        synchronized (this.serverList) {
+            this.serverList.add(newServerInfo);
+            for(int i =0;i<serverList.size();i++){
+                System.out.println("Server " + i + " " + serverList.get(i)[1]);
+            }
         }
-        System.out.println(this.listeParties.get(5));
-        partieResult[0] = partie; // Mettre à jour la variable partieResult
-        return partieResult[0]; // Retourner la partie
+        this.portServer = 0;
+        this.ipServer = null;
+        result = newServerInfo; // Mettre à jour la variable partieResult
+        return result; // Retourner les infos du nouveau serveur
     }
 
     private synchronized void waitForServerInitialization() {
-        while (this.port == 0 || this.ip == null) {
+        while (this.portServer == 0 || this.ipServer == null) {
             try {
                 wait(); // Attendre que l'initialisation des variables soit terminée
             } catch (InterruptedException e) {
@@ -144,31 +169,9 @@ public class MainServer {
     }
 
     public synchronized void setServerInitialization(String ip, Integer port) {
-        this.ip = ip;
-        this.port = port;
+        this.ipServer = ip;
+        this.portServer = port;
         notifyAll(); // Signale que l'initialisation est terminée
-    }
-
-
-    public void fillListeParties() throws Exception {
-        this.listeParties.add(new Partie(new InputMap("bonjour"), 4321, "172.186.16.58"));
-        this.listeParties.add(new Partie(new InputMap("dzdzd"), 4321, "172.186.16.58"));
-        this.listeParties.add(new Partie(new InputMap("dz"), 4321, "172.186.16.58"));
-        this.listeParties.add(new Partie(new InputMap("dz"), 4321, "172.186.16.58"));
-        this.listeParties.add(new Partie(new InputMap("ddzd"), 4321, "172.186.16.58"));
-    }
-
-    public void setIPPort(int port, String ip){
-        this.ip = ip;
-        this.port = port;
-    }
-
-    public String getIP(){
-        return this.ip;
-    }
-
-    public int getPort(){
-        return this.port;
     }
 
     public static void main(String[] args) throws Exception {

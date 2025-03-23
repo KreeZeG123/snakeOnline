@@ -1,0 +1,33 @@
+
+
+.div-panel{
+	display: flex;
+    justify-content: center; /* Centre le panneau horizontalement */
+    align-items: center; /* Centre le panneau verticalement */
+    flex-direction: column;
+}
+
+.panel {
+    width: 500px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Style du titre du panneau */
+.panel-titre {
+    text-align: center;
+    color: #333;
+}
+
+/* Style de la liste */
+.panel ul {
+    list-style-type: none;
+    text-align: center;
+    padding-left: 20px;
+}
+
+.panel ul li {
+    margin: 10px 0;
+}
