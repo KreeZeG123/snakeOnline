@@ -12,14 +12,15 @@ public class InfoUserDTO extends MainMenuDTO{
     }
 
     public String getUserName() {
-        return userName;
+        System.out.println(this.userName);
+        return this.userName;
     }
 
     public String[] getCosmetiques() {
-        return cosmetiques;
+        return this.cosmetiques;
     }
 
     public int getNbPieces() {
-        return nbPieces;
+        return this.nbPieces;
     }
 }

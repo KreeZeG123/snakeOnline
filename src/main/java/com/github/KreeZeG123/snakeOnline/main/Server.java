@@ -2,6 +2,7 @@ package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.SnakeActionDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
 import com.github.KreeZeG123.snakeOnline.model.game.SnakeGame;
@@ -160,12 +161,13 @@ public class Server {
                     else {
                         gameIsFinished = true;
                         // Prévenir les clients de la fin de la partie
+                        GameUpdateDTO infoGameEndedDTO = this.snakeGame.getGameData();
                         Protocol snakeGameEndProtocol = new Protocol(
-                                null,
-                                null,
+                                "Server",
+                                "Client",
                                 (new Date()).toString(),
                                 "SnakeGameServerEndGame",
-                                null
+                                infoGameEndedDTO
                         );
                         notifier_clients(snakeGameEndProtocol, null);
                     }
@@ -199,7 +201,7 @@ public class Server {
         try {
             serveurSocket = new ServerSocket(0); // on crée le serveur
             this.port = serveurSocket.getLocalPort();
-            this.ip = getLocalAddress();
+            this.ip = getEthernetAddress();
             System.out.println("IP du serveur : " + this.ip);
             System.out.println("Port du serveur : " + this.port);
             mainServer.setServerInitialization(this.ip, this.port);
@@ -226,24 +228,31 @@ public class Server {
 
     }
 
-    public static String getLocalAddress() {
+    public static String getEthernetAddress() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface ni = interfaces.nextElement();
-                Enumeration<InetAddress> addresses = ni.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    InetAddress addr = addresses.nextElement();
-                    // Exclure les adresses de boucle locale et IPv6
-                    if (!addr.isLoopbackAddress() && addr instanceof Inet4Address) {
-                        return addr.getHostAddress();
+
+                // Filtrer les interfaces filaires, typiquement 'eth0', 'en0', ou similaires
+                if (ni != null && !ni.isLoopback() && ni.isUp()) {
+                    // Vérifier si l'interface est Ethernet
+                    if (ni.getDisplayName().toLowerCase().contains("eth") || ni.getDisplayName().toLowerCase().contains("en")) {
+                        Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                        while (addresses.hasMoreElements()) {
+                            InetAddress addr = addresses.nextElement();
+                            // Retourner l'adresse IPv4
+                            if (addr instanceof Inet4Address) {
+                                return addr.getHostAddress();
+                            }
+                        }
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "0.0.0.0"; // Retour par défaut si aucune adresse valide n'est trouvée
+        return "0.0.0.0"; // Retourner par défaut si aucune adresse n'est trouvée
     }
 
     public int getPort(){

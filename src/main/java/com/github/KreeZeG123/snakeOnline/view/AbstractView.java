@@ -40,7 +40,7 @@ public abstract class AbstractView {
         int dx = centerPoint.x - windowSize.width / 2 ;
         int dy = centerPoint.y - windowSize.height / 2 - 350;
         this.jFrame.setLocation(dx, dy);
-        this.jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.jFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Initialisation MVC
         this.game = game;

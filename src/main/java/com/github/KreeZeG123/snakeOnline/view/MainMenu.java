@@ -22,7 +22,7 @@ import java.util.Objects;
 public class MainMenu {
     private static final int TAILLE_INPUT_X = 300;
     private static final int TAILLE_INPUT_Y = 40;
-    private static final String ip = "127.0.0.1";
+    private static final String ip = "172.20.42.200";
     private static final int port = 4321;
     private static final Font inputFont = new Font("Arial", Font.PLAIN, 30);
     private static final Font titleFont = new Font("Arial", Font.PLAIN, 45);
@@ -74,11 +74,10 @@ public class MainMenu {
         cardPanel.add(profilPanel, "profilPanel");
 
         setGBC(gbc);
-        setLoginPanel(loginPanel,cardLayout,cardPanel,gbc,partyPanel);
+        setLoginPanel(loginPanel,cardLayout,cardPanel,gbc,partyPanel,profilPanel);
         setBackButton(backButton,cardLayout,cardPanel);
-        setRegisterPanel(registerPanel,gbc,cardLayout,cardPanel,partyPanel);
+        setRegisterPanel(registerPanel,gbc,cardLayout,cardPanel,partyPanel,profilPanel);
         setCreateServerPanel(createServerPanel,gbc,cardLayout,cardPanel);
-        setProfilPanel(profilPanel,cardLayout,cardPanel,gbc);
 
         frame.setLayout(new BorderLayout());
         frame.add(cardPanel, BorderLayout.CENTER);
@@ -88,7 +87,7 @@ public class MainMenu {
         frame.setVisible(true);
     }
 
-    public void setLoginPanel(JPanel loginPanel, CardLayout cardLayout, JPanel cardPanel, GridBagConstraints gbc,JPanel partyPanel) {
+    public void setLoginPanel(JPanel loginPanel, CardLayout cardLayout, JPanel cardPanel, GridBagConstraints gbc,JPanel partyPanel,JPanel profilPanel) {
 
         JLabel titleLabel = new JLabel("Connexion");
         titleLabel.setFont(titleFont);
@@ -133,7 +132,7 @@ public class MainMenu {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LoginDTO loginDTO = new LoginDTO(Arrays.toString(passwordField.getPassword()),loginField.getText());
+                LoginDTO loginDTO = new LoginDTO(loginField.getText(),Arrays.toString(passwordField.getPassword()));
                 Protocol sendingProtocol =  new Protocol("MainMenuClient", "MainServer",(new Date()).toString(),"MainMenuClientDemandeConnexion",loginDTO);
                 sortie.println(sendingProtocol.serialize());
                 String messageRecu = null;
@@ -146,12 +145,14 @@ public class MainMenu {
                         nbPieces = infoUserDTO.getNbPieces();
                         cosmetiques = infoUserDTO.getCosmetiques();
                         userName = infoUserDTO.getUserName();
-                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel);
+                        System.out.println("USername : " + userName);
+                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
                         cardLayout.show(cardPanel, "partyPanel");
                     }
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
+
             }
         });
 
@@ -188,7 +189,7 @@ public class MainMenu {
         gbc.anchor = GridBagConstraints.CENTER; //
     }
 
-    public void setRegisterPanel(JPanel registerPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel, JPanel partyPanel){
+    public void setRegisterPanel(JPanel registerPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel, JPanel partyPanel,JPanel profilPanel){
 
         JLabel titleLabel2 = new JLabel("Register");
         titleLabel2.setFont(titleFont);
@@ -230,7 +231,7 @@ public class MainMenu {
                     Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
                     InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
                     if(receivedProtocolRegister.getMessage().equals("EnregistrementAccepté")){
-                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel);
+                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
                         userName = infoUserDTO.getUserName();
                         cardLayout.show(cardPanel, "partyPanel");
                     }else if(receivedProtocolRegister.getMessage().equals("EnregistrementRefusé")){
@@ -257,7 +258,7 @@ public class MainMenu {
         registerPanel.add(registerButton2,gbc);
     }
 
-    public void setPartyPanel(JPanel partyPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel) throws IOException {
+    public void setPartyPanel(JPanel partyPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel, JPanel profilPanel) throws IOException {
 
         JLabel titleLabel3 = new JLabel("Liste des serveurs");
         titleLabel3.setFont(titleFont);
@@ -294,6 +295,20 @@ public class MainMenu {
         profilButton.setFont(subtitleFont);
 
         profilButton.addActionListener(actionEvent -> {
+            LoginDTO loginDTO = new LoginDTO(this.userName,null);
+            System.out.println("nooooooooooom" + loginDTO.getLogin());
+            Protocol sendingDemandeInfoUserProtocol = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeInfoUser",loginDTO);
+            sortie.println(sendingDemandeInfoUserProtocol.serialize());
+            try {
+                String messageRecu = entree.readLine();
+                Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
+                InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
+                nbPieces = infoUserDTO.getNbPieces();
+                cosmetiques = infoUserDTO.getCosmetiques();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            setProfilPanel(profilPanel,cardLayout,cardPanel,gbc);
             cardLayout.show(cardPanel,"profilPanel");
         });
 
@@ -350,7 +365,6 @@ public class MainMenu {
             messageRecu = entree.readLine();
             Protocol receivedProtocol = Protocol.deserialize(messageRecu);
             ServerListDTO serverListDTO = receivedProtocol.getData();
-            System.out.println(receivedProtocol);
             serverListInfo.clear();
             serverListInfo.addAll(serverListDTO.getServerList());
             for(int i = 0; i < serverListInfo.size(); i++){
@@ -363,6 +377,7 @@ public class MainMenu {
 
     public void setProfilPanel(JPanel profilPanel, CardLayout cardLayout,JPanel cardPanel, GridBagConstraints gbc){
         JButton backButton = new JButton("Retour");
+        System.out.println(this.userName);
 
         JLabel userNameLabel = new JLabel("Profil de : " + this.userName);
         userNameLabel.setFont(titleFont);
@@ -376,7 +391,6 @@ public class MainMenu {
         backButton.addActionListener(actionEvent -> {
             cardLayout.show(cardPanel,"partyPanel");
         });
-
         profilPanel.add(backButton, gbc);
         profilPanel.add(userNameLabel, gbc);
         profilPanel.add(nbPiecesLabel,gbc);

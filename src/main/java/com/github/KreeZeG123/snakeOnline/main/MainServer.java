@@ -81,8 +81,7 @@ public class MainServer {
                     case "MainMenuClientDemandeConnexion":
                         System.out.println("Demande de connexion");
                         LoginDTO loginDTO = receivedProtocol.getData();
-                        String password = loginDTO.getPassword();
-                        String login = loginDTO.getLogin();
+                        System.out.println("njnn" + loginDTO.getLogin());
                         ///Verification dans la base données + retour d'informations sur l'utilisateur
                         String[] cosmetiques = {"Chapeau","Lunettes"};
                         InfoUserDTO infoUserDTOLogin = new InfoUserDTO(loginDTO.getLogin(), cosmetiques, 10);
@@ -113,6 +112,16 @@ public class MainServer {
                         //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
                         Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementAccepté", infoUserDTORegister);
                         sortie.println(sendingProtocolRegister.serialize());
+                        break;
+                    case "MainMenuClientDemandeInfoUser" :
+                        System.out.println("Demande informations user");
+                        LoginDTO loginDTODemandeInfo = receivedProtocol.getData();
+                        ///Verification du login si il est deja utilisé
+                        InfoUserDTO infoUserDTODemandeInfo = new InfoUserDTO(loginDTODemandeInfo.getLogin(),new String[0], 0);
+                        System.out.println("huhuihhhuh" + loginDTODemandeInfo.getLogin());
+                        //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
+                        Protocol sendingProtocolDemandeInfoUser = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "RetourDemandeInfoUser", infoUserDTODemandeInfo);
+                        sortie.println(sendingProtocolDemandeInfoUser.serialize());
                         break;
                     default :
                         break;

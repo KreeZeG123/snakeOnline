@@ -52,7 +52,6 @@ public class Client {
                         case "SnakeGameServerUpdate" : {
                             // Extraction des informations
                             GameUpdateDTO gameUpdateDTO = receivedProtocol.getData();
-
                             this.controller.update(
                                     gameUpdateDTO.snakes,
                                     gameUpdateDTO.items,

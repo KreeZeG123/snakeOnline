@@ -16,4 +16,6 @@ public class GameUpdateDTO extends SnakeGameDTO {
         this.snakes = snakes;
         this.snakeInfos = snakeInfos;
     }
+
+
 }
