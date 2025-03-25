@@ -47,7 +47,7 @@ public class JoueurDaoImpl implements JoueurDao {
 
     /* Implémentation de la méthode définie dans l'interface JoueurDao */
 	@Override
-	public void creer( Joueur Joueur ) throws DAOException {
+	public void ajouterJoueur( Joueur Joueur ) throws DAOException {
 		Connection connexion = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet valeursAutoGenerees = null;

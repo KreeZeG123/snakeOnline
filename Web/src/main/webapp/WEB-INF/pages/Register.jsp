@@ -15,7 +15,7 @@
 </div>
 	<div class="register-div">
 		<div class="register-container">
-	        <form action="/enregistrement" method="POST" class="register-form">
+	        <form method="POST" class="register-form">
 	            <h2>Inscription</h2>
 	
 	            <!-- Champ Nom d'utilisateur -->

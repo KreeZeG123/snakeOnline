@@ -15,7 +15,7 @@ public class ServletAccueil extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private static final String ACCEUIL_JSP = "/WEB-INF/pages/Accueil.jsp";
+	private static final String ACCUEIL_JSP = "/WEB-INF/pages/Accueil.jsp";
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -30,7 +30,7 @@ public class ServletAccueil extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		this.getServletContext().getRequestDispatcher(ACCEUIL_JSP).forward(request,response);
+		this.getServletContext().getRequestDispatcher(ACCUEIL_JSP).forward(request,response);
 	}
 
 	/**
