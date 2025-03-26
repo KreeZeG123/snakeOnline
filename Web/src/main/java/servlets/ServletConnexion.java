@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import model.forms.FormulaireConnexion;
+import model.forms.FormConnexion;
 
 /**
  * Servlet implementation class ServletConnexion
@@ -40,7 +40,7 @@ public class ServletConnexion extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		FormulaireConnexion form = new FormulaireConnexion();
+		FormConnexion form = new FormConnexion();
 		form.verif(request);
 		request.setAttribute("form", form); 
 		

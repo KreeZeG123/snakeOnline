@@ -2,7 +2,7 @@ package model.forms;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class FormulaireConnexion {
+public class FormConnexion {
 	private String result;
 	private String username;
 	private String pwd;

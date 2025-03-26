@@ -7,19 +7,23 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import bdd.Joueurs;
 import model.beans.Joueur;
-import model.dao.DAOException;
-import model.dao.DAOFactory;
-import model.dao.JoueurDao;
+import model.dao.interfaces.JoueurDao;
+import model.forms.FormInscription;
+import model.dao.factory.DAOFactory;
 
 /**
  * Servlet implementation class ServletRegister
  */
 @WebServlet("/inscription")
 public class ServletRegister extends HttpServlet {
+	
 	private static final long serialVersionUID = 1L;
+	
 	private static final String REGISTER_JSP = "/WEB-INF/pages/Register.jsp";
+	public static final String ATT_JOUEUR = "joueur";
+    public static final String ATT_FORM = "form";
+	
     private JoueurDao joueurDAO;
     
     public void init() throws ServletException{
@@ -38,26 +42,17 @@ public class ServletRegister extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Joueur joueur = new Joueur();
-		joueur.setUsername(request.getParameter("nom"));
-		joueur.setMotDePasse(request.getParameter("prenom"));
-		joueur.setNbPieces(0);
+		
+        /* Préparation de l'objet formulaire */
+        FormInscription form = new FormInscription( joueurDAO );
+
+        /* Traitement de la requête et récupération du bean en résultant */
+        Joueur joueur = form.inscrireUtilisateur( request );
+
+        /* Stockage du formulaire et du bean dans l'objet request */
+        request.setAttribute( ATT_FORM, form );
+        request.setAttribute( ATT_JOUEUR, joueur);
         
-        Joueurs tableJoueurs = new Joueurs();
-        
-        String message = "Inscription réussis !";
-        String status = "success";
-        try {
-        	joueurDAO.ajouterJoueur(joueur);
-        } catch(DAOException e) {
-        	message = "Erreur : " + e.getMessage();
-        	status = "danger";
-        }
-        
-        request.setAttribute("utilisateurs", tableJoueurs.recupererJoueurs());
-        
-        request.setAttribute("message", message);
-        request.setAttribute("status", status);
         
        doGet(request, response);
 	}
