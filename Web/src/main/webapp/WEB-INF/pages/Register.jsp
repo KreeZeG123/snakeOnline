@@ -14,7 +14,7 @@
     </div>
     <div class="container d-flex justify-content-center align-items-center" style="height: 75vh;">
         <div class="card p-4 shadow-lg" style="width: 400px;">
-            <form action="/enregistrement" method="POST">
+            <form action="inscription" method="POST">
                 <h2 class="text-center mb-4">Inscription</h2>
 
                 <!-- Champ Nom d'utilisateur -->

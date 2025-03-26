@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.beans.Joueur;
+import model.dao.DAOException;
 
 public class Joueurs {
     private Connection connexion;
@@ -40,6 +41,7 @@ public class Joueurs {
                 joueurs.add(joueur);
             }
         } catch (SQLException e) {
+        	throw new DAOException(e);
         } finally {
             // Fermeture de la connexion
             try {

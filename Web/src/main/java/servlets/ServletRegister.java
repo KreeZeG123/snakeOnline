@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import bdd.Joueurs;
 import model.beans.Joueur;
+import model.dao.DAOException;
 import model.dao.DAOFactory;
 import model.dao.JoueurDao;
 
@@ -43,11 +44,22 @@ public class ServletRegister extends HttpServlet {
 		joueur.setNbPieces(0);
         
         Joueurs tableJoueurs = new Joueurs();
-        joueurDAO.ajouterJoueur(joueur);
+        
+        String message = "Inscription réussis !";
+        String status = "success";
+        try {
+        	joueurDAO.ajouterJoueur(joueur);
+        } catch(DAOException e) {
+        	message = "Erreur : " + e.getMessage();
+        	status = "danger";
+        }
         
         request.setAttribute("utilisateurs", tableJoueurs.recupererJoueurs());
         
-        this.getServletContext().getRequestDispatcher("/WEB-INF/Accueil.jsp").forward(request, response);
+        request.setAttribute("message", message);
+        request.setAttribute("status", status);
+        
+       doGet(request, response);
 	}
 
 }
