@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+  <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -18,6 +19,11 @@
 		        <div class="container text-center mt-4">
 			        <a href="connexion" class="btn btn-primary">Se connecter</a>
 			    </div>
+          <ul class="list-unstyled">
+		        <c:forEach items="${ utilisateurs }" var="utilisateur" varStatus="status">
+					    <li>N°<c:out value="${ status.count }" /> : <c:out value="${ utilisateur.username }" /> !</li>
+					  </c:forEach>
+		      </ul>
 		    </div>
 	   	</div>
 	</body>
