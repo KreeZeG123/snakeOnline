@@ -8,9 +8,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import model.beans.Item;
 import model.beans.Joueur;
+import model.dao.factory.DAOFactory;
+import model.dao.interfaces.JoueurDao;
 
 /**
  * Servlet implementation class ServletProfil
@@ -21,30 +24,22 @@ public class ServletProfil extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String ITEMS_ATTR = "items";
+	private static final String ATT_JOUEUR = "joueur";
+	private static final String ATT_JOUEUR_ID_SESSION = "joueurID";
 	
 	private static final String PROFIL_JSP = "/WEB-INF/pages/Profil.jsp";
        
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public ServletProfil() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
+	private JoueurDao joueurDAO;
+    
+    public void init() throws ServletException{
+    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	this.joueurDAO = daoFactory.getJoueurDao();
+	}
+	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Joueur joueur = new Joueur();
-		joueur.setNbPieces(55);
-		joueur.setUsername("Nathan");
-		joueur.setMotDePasse("nathanmdp");
-		joueur.setScore(350);
-		joueur.setSkins("1 2");
-		
-		request.setAttribute("joueur", joueur);
-		
 		ArrayList<Item> items = new ArrayList<>();
 		
 		Item itemCamouflage = new Item();
@@ -74,7 +69,13 @@ public class ServletProfil extends HttpServlet {
 		items.add(itemNeon);
 		items.add(itemCamouflage);
 		
-		request.setAttribute(ITEMS_ATTR, items);
+		// Obtention du joueur
+		HttpSession session = request.getSession();
+		Long joueurIDString = (Long) session.getAttribute(ATT_JOUEUR_ID_SESSION);
+		Joueur joueur = this.joueurDAO.trouverParId(joueurIDString);
+		
+		request.setAttribute( ATT_JOUEUR, joueur );
+		request.setAttribute( ITEMS_ATTR, items );
 		
 		this.getServletContext().getRequestDispatcher(PROFIL_JSP).forward(request,response);
 	}

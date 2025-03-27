@@ -23,10 +23,10 @@ public class ServletConnexion extends HttpServlet {
 	
 	private static final String CONNEXION_JSP = "/WEB-INF/pages/Connexion.jsp";
 	
-	public static final String ATT_JOUEUR = "joueur";
-    public static final String ATT_FORM = "form";
-    public static final String ATT_JOUEUR_ID_SESSION = "joueurID";
-    public static final String ATT_JOUEUR_USERNAME_SESSION = "joueurUsername";
+	private static final String ATT_JOUEUR = "joueur";
+	private static final String ATT_FORM = "form";
+	private static final String ATT_JOUEUR_ID_SESSION = "joueurID";
+	private static final String ATT_JOUEUR_USERNAME_SESSION = "joueurUsername";
        
     private JoueurDao joueurDAO;
     

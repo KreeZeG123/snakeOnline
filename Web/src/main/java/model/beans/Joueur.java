@@ -1,8 +1,5 @@
 package model.beans;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class Joueur {
 	
 	private long id = -1; 
@@ -21,8 +18,8 @@ public class Joueur {
 		this.score = score;
 	}
 	
-	public List<String> getSkins() {
-		return Arrays.asList(this.skins.split(":"));
+	public String getSkins() {
+		return skins;
 	}
 	
 	public void addSkins(Item item) {
