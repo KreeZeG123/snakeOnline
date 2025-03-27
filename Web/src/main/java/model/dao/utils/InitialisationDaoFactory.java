@@ -1,11 +1,15 @@
-package model.dao;
+package model.dao.utils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
+import model.dao.factory.DAOFactory;
 
+@WebListener
 public class InitialisationDaoFactory implements ServletContextListener {
+	
     private static final String ATT_DAO_FACTORY = "daofactory";
 
     private DAOFactory daoFactory;

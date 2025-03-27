@@ -2,10 +2,11 @@ package model.beans;
 
 public class Joueur {
 	
-	private long id; 
-	private String username;
-	private String motDePasse;
-	private int nbPieces;
+	private long id = -1; 
+	private String username = "";
+	private String email = "";
+	private String motDePasse = "";
+	private int nbPieces = 0;
 	
 	public long getId() {
 		return id;
@@ -13,21 +14,24 @@ public class Joueur {
 	public void setId(long id) {
 		this.id = id;
 	}
-	
 	public String getUsername() {
 		return username;
 	}
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
 	public String getMotDePasse() {
 		return motDePasse;
 	}
 	public void setMotDePasse(String motDePasse) {
 		this.motDePasse = motDePasse;
 	}
-	
 	public int getNbPieces() {
 		return nbPieces;
 	}
