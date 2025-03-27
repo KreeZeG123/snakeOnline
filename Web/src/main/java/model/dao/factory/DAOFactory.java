@@ -7,8 +7,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import model.dao.interfaces.ItemDAO;
 import model.dao.interfaces.JoueurDao;
 import model.dao.exceptions.DAOConfigurationException;
+import model.dao.implementations.ItemDaoImpl;
 import model.dao.implementations.JoueurDaoImpl;
 
 public class DAOFactory {
@@ -78,5 +80,9 @@ public class DAOFactory {
      */
     public JoueurDao getJoueurDao() {
         return new JoueurDaoImpl( this );
+    }
+    
+    public ItemDAO getItemDAO() {
+        return new ItemDaoImpl( this );
     }
 }
