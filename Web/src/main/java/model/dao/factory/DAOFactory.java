@@ -1,4 +1,4 @@
-package model.dao;
+package model.dao.factory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,6 +6,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import model.dao.interfaces.JoueurDao;
+import model.dao.exceptions.DAOConfigurationException;
+import model.dao.implementations.JoueurDaoImpl;
 
 public class DAOFactory {
 
@@ -15,9 +19,9 @@ public class DAOFactory {
     private static final String PROPERTY_NOM_UTILISATEUR = "nomutilisateur";
     private static final String PROPERTY_MOT_DE_PASSE    = "motdepasse";
 
-    private String              url;
-    private String              username;
-    private String              password;
+    public String              url;
+    public String              username;
+    public String              password;
 
     DAOFactory( String url, String username, String password ) {
         this.url = url;
@@ -64,7 +68,7 @@ public class DAOFactory {
     }
 
     /* Méthode chargée de fournir une connexion à la base de données */
-     /* package */ Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return DriverManager.getConnection( url, username, password );
     }
 
