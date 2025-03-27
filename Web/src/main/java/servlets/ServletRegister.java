@@ -21,6 +21,7 @@ public class ServletRegister extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String REGISTER_JSP = "/WEB-INF/pages/Register.jsp";
+	
 	public static final String ATT_JOUEUR = "joueur";
     public static final String ATT_FORM = "form";
 	
@@ -28,7 +29,8 @@ public class ServletRegister extends HttpServlet {
     
     public void init() throws ServletException{
     	DAOFactory daoFactory = DAOFactory.getInstance();
-    	this.joueurDAO = daoFactory.getJoueurDao();    }
+    	this.joueurDAO = daoFactory.getJoueurDao();
+	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

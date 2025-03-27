@@ -2,9 +2,9 @@
 
 ## Create Specified Mysql User
 ```
-CREATE USER 'javeSnakeOnlineUser'@'localhost' IDENTIFIED BY 'javaSnakeOnline';
+CREATE USER 'javaSnakeOnlineUser'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'javaSnakeOnline';
 CREATE DATABASE snake_online_db;
-GRANT SELECT, INSERT, UPDATE, DELETE ON snake_online_db.* TO 'javeSnakeOnlineUser'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON snake_online_db.* TO 'javaSnakeOnlineUser'@'localhost';
 FLUSH PRIVILEGES;
 ```
 

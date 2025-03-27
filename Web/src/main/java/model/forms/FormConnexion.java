@@ -2,44 +2,110 @@ package model.forms;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class FormConnexion {
-	private String result;
-	private String username;
-	private String pwd;
+import org.jasypt.util.password.ConfigurablePasswordEncryptor;
+
+import model.beans.Joueur;
+import model.dao.exceptions.DAOException;
+import model.dao.interfaces.JoueurDao;
+
+public class FormConnexion extends FormBase {
 	
-	public void verif( HttpServletRequest request) {
-		this.username = request.getParameter("username"); 
-		this.pwd = request.getParameter("password"); 
-		if(this.pwd.equals("motdepasse")) {
-			result = "Connexion acceptée";
-		}else {
-			result = "Erreur";
-		}
-
+	private static final String CHAMP_USERNAME    = "username";
+    private static final String CHAMP_MOT_DE_PASSE   = "password";
+    private static final String CHAMP_USERNAME_ET_MOT_DE_PASSE   = "usernameAndPassword";
+    
+    private static final String ALGO_CHIFFREMENT = "SHA-256";
+    
+	private JoueurDao joueurDao;
+	
+	public FormConnexion( JoueurDao joueurDao ) {
+	    this.joueurDao = joueurDao;
 	}
 
-	public String getResult() {
-		return result;
-	}
+	public Joueur connecterJoueur( HttpServletRequest request ) {
+		String username = getValeurChamp( request, CHAMP_USERNAME );
+	    String motDePasse = getValeurChamp( request, CHAMP_MOT_DE_PASSE );
 
-	public void setResult(String result) {
-		this.result = result;
+	    Joueur joueur = new Joueur();
+	    try {
+	    	joueur = traiterUsername( username );
+	    	
+	    	String motDePasseChiffreStocke = joueur.getMotDePasse();
+	    	traiterMotsDePasse(motDePasse, motDePasseChiffreStocke);
+	        if ( erreurs.isEmpty() ) {
+	            resultat = "Succès de la connexion.";
+	        } else {
+	        	setErreur("status", "echec");
+	            resultat = "Échec de la connexion.";
+	        }
+	    } catch ( DAOException e ) {
+	    	setErreur("status", "echec");
+	        resultat = "Échec de la connexion : une erreur imprévue est survenue, merci de réessayer dans quelques instants.";
+	        e.printStackTrace();
+	    }
+
+	    return joueur;
 	}
 	
-	public String getUsername() {
-		return username;
+	private Joueur traiterUsername( String username ) {
+	    try {
+	        return validationUsername( username );
+	    } catch ( FormValidationException e ) {
+	    	String specifiedAttrString = ((FormValidationException)e).getSpecifiedAttr();
+	    	if ( specifiedAttrString != null ) {
+	    		setErreur(specifiedAttrString, e.getMessage());
+	    	}
+	    	else {
+	    		setErreur( CHAMP_USERNAME, e.getMessage() );
+	    	}
+	    }
+	    return new Joueur();
 	}
-
-	public void setUsername(String username) {
-		this.username = username;
+	
+	private void traiterMotsDePasse( String motDePasse, String motDePasseChiffreStocke ) {
+	    try {
+	        validationMotDePasse( motDePasse, motDePasseChiffreStocke );
+	    } catch ( FormValidationException e ) {
+	    	String specifiedAttrString = ((FormValidationException)e).getSpecifiedAttr();
+	    	if ( specifiedAttrString != null ) {
+	    		setErreur(specifiedAttrString, e.getMessage());
+	    	}
+	    	else {
+	    		setErreur( CHAMP_MOT_DE_PASSE, e.getMessage() );
+	    		System.out.println(getErreur(CHAMP_USERNAME));
+	    		if ( getErreur(CHAMP_USERNAME) == null ) {
+	    			setErreur( CHAMP_USERNAME, "");
+	    		}
+	    	}
+	    }
+	    
 	}
+	
+	private Joueur validationUsername(String username) throws FormValidationException {
+        if (username == null || username.trim().isEmpty()) {
+            throw new FormValidationException("Merci d'entrer un nom d'utilisateur.");
+        }
 
-	public String getPwd() {
-		return pwd;
-	}
+        Joueur joueur = joueurDao.trouverParUsername(username);
+        if (joueur == null) {
+            throw new FormValidationException("Mauvais username ou mot de passe.", CHAMP_USERNAME_ET_MOT_DE_PASSE);
+        }
 
-	public void setPwd(String pwd) {
-		this.pwd = pwd;
-	}
+        return joueur;
+    }
 
+    private void validationMotDePasse(String motDePasse, String motDePasseChiffreStocke) throws FormValidationException {
+        if (motDePasse == null || motDePasse.trim().isEmpty()) {
+            throw new FormValidationException("Merci d'entrer un mot de passe.");
+        }
+
+        ConfigurablePasswordEncryptor passwordEncryptor = new ConfigurablePasswordEncryptor();
+        passwordEncryptor.setAlgorithm(ALGO_CHIFFREMENT);
+        passwordEncryptor.setPlainDigest(false);
+
+        if (!passwordEncryptor.checkPassword(motDePasse, motDePasseChiffreStocke)) {
+            throw new FormValidationException("Mauvais username ou mot de passe.", CHAMP_USERNAME_ET_MOT_DE_PASSE);
+        }
+    }
+	
 }

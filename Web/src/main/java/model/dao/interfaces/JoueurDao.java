@@ -5,10 +5,10 @@ import model.dao.exceptions.DAOException;
 
 public interface JoueurDao {
 
-	Joueur trouverUsername( String username ) throws DAOException;
+	Joueur trouverParUsername( String username ) throws DAOException;
 
-    Joueur trouverEmail( String email ) throws DAOException;
+    Joueur trouverParEmail( String email ) throws DAOException;
 
-	void creer(Joueur joueur) throws DAOException;
+	void creerJoueur(Joueur joueur) throws DAOException;
 
 }

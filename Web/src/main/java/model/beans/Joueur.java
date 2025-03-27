@@ -2,11 +2,11 @@ package model.beans;
 
 public class Joueur {
 	
-	private long id; 
-	private String username;
-	private String email;
-	private String motDePasse;
-	private int nbPieces;
+	private long id = -1; 
+	private String username = "";
+	private String email = "";
+	private String motDePasse = "";
+	private int nbPieces = 0;
 	
 	public long getId() {
 		return id;

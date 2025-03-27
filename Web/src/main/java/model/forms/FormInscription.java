@@ -36,7 +36,7 @@ public class FormInscription extends FormBase {
 	        traiterMotsDePasse( motDePasse, motDePasseConfirmation, joueur );
 
 	        if ( erreurs.isEmpty() ) {
-	        	joueurDao.creer( joueur );
+	        	joueurDao.creerJoueur( joueur );
 	            resultat = "Succès de l'inscription.";
 	        } else {
 	        	setErreur("status", "echec");
@@ -107,7 +107,7 @@ public class FormInscription extends FormBase {
         if ( username != null ) {
             if ( username.length() < 3 ) {
                 throw new FormValidationException( "Le nom d'utilisateur doit contenir au moins 3 caractères." );
-            } else if ( joueurDao.trouverUsername( username ) != null ) {
+            } else if ( joueurDao.trouverParUsername( username ) != null ) {
 	            throw new FormValidationException( "Cet nom d'utilisateur est déjà utilisé, merci d'en choisir un autre." );
 	        }
         } else {
@@ -120,7 +120,7 @@ public class FormInscription extends FormBase {
 	    if ( email != null ) {
 	        if ( !email.matches( "([^.@]+)(\\.[^.@]+)*@([^.@]+\\.)+([^.@]+)" ) ) {
 	            throw new FormValidationException( "Merci de saisir une adresse mail valide." );
-	        } else if ( joueurDao.trouverEmail( email ) != null ) {
+	        } else if ( joueurDao.trouverParEmail( email ) != null ) {
 	            throw new FormValidationException( "Cette adresse email est déjà utilisée, merci d'en choisir une autre." );
 	        }
 	    } else {

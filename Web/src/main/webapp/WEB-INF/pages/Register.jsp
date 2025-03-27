@@ -19,7 +19,7 @@
             <form action="inscription" method="POST">
                 <h2 class="text-center mb-4">Inscription</h2>
                 
-                <p class="text-center mb-4 ${empty form.erreurs ? 'succes' : 'erreur'}">${form.resultat}</p>
+                <p class="text-center mb-4 ${empty form.erreurs ? 'text-success' : 'text-danger'}">${form.resultat}</p>
 
                 <!-- Champ Nom d'utilisateur -->
                 <div class="mb-3">

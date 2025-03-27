@@ -21,6 +21,10 @@ public abstract class FormBase {
     protected void setErreur( String champ, String message ) {
         erreurs.put( champ, message );
     }
+    
+    protected String getErreur( String champ ) {
+        return erreurs.get( champ );
+    }
 
     protected static String getValeurChamp( HttpServletRequest request, String nomChamp ) {
         String valeur = request.getParameter( nomChamp );

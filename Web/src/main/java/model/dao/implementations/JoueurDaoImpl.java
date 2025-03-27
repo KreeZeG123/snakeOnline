@@ -15,18 +15,18 @@ public class JoueurDaoImpl implements JoueurDao {
 	
 	private DAOFactory daoFactory;
 	
-	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, email, mot_de_passe, nb_pieces, date_inscription FROM joueurs WHERE username = ?";
-	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, email, mot_de_passe, nb_pieces, date_inscription FROM joueurs WHERE email = ?";
+	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, date_inscription FROM joueurs WHERE username = ?";
+	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, mot_de_passe, email, nb_pieces, date_inscription FROM joueurs WHERE email = ?";
 	
 	private static final String SQL_INSERT = "INSERT INTO joueurs (username, email, mot_de_passe, nb_pieces, date_inscription) VALUES (?, ?, ?, ?, NOW())";
-
+	
     public JoueurDaoImpl( DAOFactory daoFactory ) {
         this.daoFactory = daoFactory;
     }
     
     /* Implémentation de la méthode définie dans l'interface JoueurDao */
 	@Override
-	public Joueur trouverUsername( String username ) throws DAOException {
+	public Joueur trouverParUsername( String username ) throws DAOException {
 		Connection connexion = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
@@ -52,7 +52,7 @@ public class JoueurDaoImpl implements JoueurDao {
 	
 	/* Implémentation de la méthode définie dans l'interface JoueurDao */
 	@Override
-	public Joueur trouverEmail( String email ) throws DAOException {
+	public Joueur trouverParEmail( String email ) throws DAOException {
 		Connection connexion = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
@@ -78,7 +78,7 @@ public class JoueurDaoImpl implements JoueurDao {
 
     /* Implémentation de la méthode définie dans l'interface JoueurDao */
 	@Override
-	public void creer( Joueur Joueur ) throws DAOException {
+	public void creerJoueur( Joueur Joueur ) throws DAOException {
 		Connection connexion = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet valeursAutoGenerees = null;

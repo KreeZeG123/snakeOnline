@@ -8,6 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import model.beans.Joueur;
+import model.dao.factory.DAOFactory;
+import model.dao.interfaces.JoueurDao;
 import model.forms.FormConnexion;
 
 /**
@@ -19,14 +22,18 @@ public class ServletConnexion extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String CONNEXION_JSP = "/WEB-INF/pages/Connexion.jsp";
+	
+	public static final String ATT_JOUEUR = "joueur";
+    public static final String ATT_FORM = "form";
+    public static final String ATT_JOUEUR_ID_SESSION = "joueurID";
+    public static final String ATT_JOUEUR_USERNAME_SESSION = "joueurUsername";
        
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public ServletConnexion() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+    private JoueurDao joueurDAO;
+    
+    public void init() throws ServletException{
+    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	this.joueurDAO = daoFactory.getJoueurDao();
+	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -40,15 +47,23 @@ public class ServletConnexion extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		FormConnexion form = new FormConnexion();
-		form.verif(request);
-		request.setAttribute("form", form); 
-		
-		HttpSession session = request.getSession();
-		session.setAttribute("username", form.getUsername());
 
+		/* Préparation de l'objet formulaire */
+        FormConnexion form = new FormConnexion( joueurDAO );
 
-		this.getServletContext().getRequestDispatcher("/WEB-INF/page1.jsp").forward(request,response);
+        /* Traitement de la requête et récupération du bean en résultant */
+        Joueur joueur = form.connecterJoueur(request);
+        
+        /* Stockage du formulaire et du bean dans l'objet request */
+        request.setAttribute( ATT_FORM, form );
+        request.setAttribute( ATT_JOUEUR, joueur);
+        
+        /* Stockage de l'idée du joueur en séssion */
+        HttpSession session = request.getSession();
+        session.setAttribute(ATT_JOUEUR_ID_SESSION, joueur.getId());
+        session.setAttribute(ATT_JOUEUR_USERNAME_SESSION, joueur.getUsername());
+
+        doGet(request, response);
 	}
 
 }
