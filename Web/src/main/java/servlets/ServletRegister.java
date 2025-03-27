@@ -6,6 +6,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import model.beans.Joueur;
 import model.dao.interfaces.JoueurDao;
@@ -21,9 +22,12 @@ public class ServletRegister extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String REGISTER_JSP = "/WEB-INF/pages/Register.jsp";
+	private static final String CONNEXION_JSP = "/WEB-INF/pages/Connexion.jsp";
 	
-	public static final String ATT_JOUEUR = "joueur";
-    public static final String ATT_FORM = "form";
+	private static final String ATT_JOUEUR = "joueur";
+	private static final String ATT_FORM = "form";
+	private static final String ATT_JOUEUR_ID_SESSION = "joueurID";
+	private static final String ATT_JOUEUR_USERNAME_SESSION = "joueurUsername";
 	
     private JoueurDao joueurDAO;
     
@@ -54,6 +58,15 @@ public class ServletRegister extends HttpServlet {
         /* Stockage du formulaire et du bean dans l'objet request */
         request.setAttribute( ATT_FORM, form );
         request.setAttribute( ATT_JOUEUR, joueur);
+        
+        if (form.getErreurs().isEmpty()) {
+        	/* Stockage de l'idée du joueur en séssion */
+            HttpSession session = request.getSession();
+            session.setAttribute(ATT_JOUEUR_ID_SESSION, joueur.getId());
+            session.setAttribute(ATT_JOUEUR_USERNAME_SESSION, joueur.getUsername());
+            
+            this.getServletContext().getRequestDispatcher(CONNEXION_JSP).forward(request, response);
+        }
         
         
        doGet(request, response);

@@ -6,22 +6,24 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>SnakeGame</title>
-		<link rel="stylesheet" href="css/menu.css">
-		<link rel="stylesheet" href="css/accueil.css">
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=logout" />
 	</head>
 	<body>
 		<%@ include file="../partials/Menu.jsp" %>
 		<div class="mx-auto flex-column text-break justify-content-center align-items-center w-75">
-			<div class="text-center py-5 bg-dark text-white rounded">
+			<div class="text-center py-4 bg-dark text-white rounded">
+				<div class="d-flex flex-row justify-content-end px-4">
+					<a class="btn btn-light btn-lg material-symbols-outlined" href="<c:url value="deconnexion" />">logout</a>
+				</div>
 				<div>
-			        <h1 class="mb-3"><c:out value="Profil de ${joueur.getUsername()}"/></h1>
-			        <h3><c:out value="Pieces : ${joueur.getNbPieces()}"/></h3>
-			        <h3><c:out value="Score : ${joueur.getScore() }"/></h3>
+			        <h1 class="mb-3"><c:out value="Profil de ${joueur.username}"/></h1>
+			        <h3><c:out value="Pieces : ${joueur.nbPieces}"/></h3>
+			        <h3><c:out value="Score : ${joueur.score}"/></h3>
 			        <h2>Collection de skins</h2>
 		        </div>
-		        <hr class="border border-primary border-4 opacity-100 rounded mx-3">
+		        <hr class="border border-info border-4 opacity-100 rounded mx-3">
 			    <div class="row">
 			        <c:forEach var="item" items="${items}">
 			            <div class="col-md-4 mb-2">

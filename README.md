@@ -13,10 +13,12 @@ FLUSH PRIVILEGES;
 USE snake_online_db;
 CREATE TABLE joueurs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     mot_de_passe VARCHAR(255) NOT NULL,
     nb_pieces INT DEFAULT 0,
+    skins VARCHAR(511) NOT NULL,
+    score INT DEFAULT 0,
     date_inscription DATE NOT NULL DEFAULT (CURRENT_DATE)
 );
 ```

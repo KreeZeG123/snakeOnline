@@ -34,7 +34,7 @@
 		                        </div>
 		                        <form action="acheterItem" method="POST">
 		                            <input type="hidden" name="itemId" value="${item.id}">
-		                            <button type="submit" class="btn btn-primary">
+		                            <button type="submit" class="btn btn-info">
 		                                Acheter - ${item.price} Pièces
 		                            </button>
 		                        </form>
