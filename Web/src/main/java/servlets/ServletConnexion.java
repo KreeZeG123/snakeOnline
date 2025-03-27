@@ -60,8 +60,11 @@ public class ServletConnexion extends HttpServlet {
         
         /* Stockage de l'idée du joueur en séssion */
         HttpSession session = request.getSession();
-        session.setAttribute(ATT_JOUEUR_ID_SESSION, joueur.getId());
-        session.setAttribute(ATT_JOUEUR_USERNAME_SESSION, joueur.getUsername());
+        
+        if (form.getErreurs().isEmpty()) {
+        	session.setAttribute(ATT_JOUEUR_ID_SESSION, joueur.getId());
+            session.setAttribute(ATT_JOUEUR_USERNAME_SESSION, joueur.getUsername());
+        }
 
         doGet(request, response);
 	}

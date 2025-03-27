@@ -31,25 +31,26 @@ public class ServletProfil extends HttpServlet {
 	private static final String PROFIL_JSP = "/WEB-INF/pages/Profil.jsp";
        
 	private JoueurDao joueurDAO;
-  private ItemDAO itemDao;
+	private ItemDAO itemDao;
     
     public void init() throws ServletException{
     	DAOFactory daoFactory = DAOFactory.getInstance();
     	this.joueurDAO = daoFactory.getJoueurDao();
-      this.itemDao = daoFactory.getItemDAO();
+    	this.itemDao = daoFactory.getItemDAO();
 	}
 	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		ArrayList<Item> items = itemDao.getItemsById(joueur.getSkins());
-		
+	
 		// Obtention du joueur
 		HttpSession session = request.getSession();
 		Long joueurIDString = (Long) session.getAttribute(ATT_JOUEUR_ID_SESSION);
 		Joueur joueur = this.joueurDAO.trouverParId(joueurIDString);
+		
+		// Obtention des skins
+		ArrayList<Item> items = itemDao.getItemsById(joueur.getSkins());
 		
 		request.setAttribute( ATT_JOUEUR, joueur );
 		request.setAttribute( ITEMS_ATTR, items );

@@ -13,7 +13,7 @@
 		<%@ include file="../partials/Menu.jsp" %>
 		<div class="d-flex flex-column text-break justify-content-center align-items-center">
 			<div class="text-center py-3 bg-dark text-white rounded" style="width: 60vw;" >
-		        <h1>Bienvenue sur SnakeOnline</h1>
+		        <h1 class="text-info">Bienvenue sur SnakeOnline</h1>
 		        <h3>Connectez-vous pour jouer et grimper dans les classements !</h3>
 		        
 		        <div class="container text-center mt-4">

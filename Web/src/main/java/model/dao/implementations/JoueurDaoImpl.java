@@ -18,6 +18,7 @@ public class JoueurDaoImpl implements JoueurDao {
 	private static final String SQL_SELECT_PAR_ID = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE id = ?";
 	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE username = ?";
 	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE email = ?";
+	private static final String SQL_UPDATE_JOUEUR = "UPDATE joueurs SET username = ?, mot_de_passe = ?, email = ?, nb_pieces = ?, skins = ?, score = ? WHERE id = ?";
 	
 	private static final String SQL_INSERT = "INSERT INTO joueurs (username, email, mot_de_passe, nb_pieces, skins, score, date_inscription) VALUES (?, ?, ?, ?, ?, ?, NOW())";
 	
@@ -132,6 +133,43 @@ public class JoueurDaoImpl implements JoueurDao {
 		} finally {
 			DAOUtilitaire.fermeturesSilencieuses( valeursAutoGenerees, preparedStatement, connexion );
 		}
+	}
+	
+	@Override
+	public void updateJoueur(Joueur joueur) throws DAOException {
+	    Connection connexion = null;
+	    PreparedStatement preparedStatement = null;
+
+	    try {
+	        // Récupération d'une connexion depuis la Factory
+	        connexion = daoFactory.getConnection();
+	        
+	        // Préparation de la requête
+	        preparedStatement = DAOUtilitaire.initialisationRequetePreparee(
+	            connexion, SQL_UPDATE_JOUEUR, false, 
+	            joueur.getUsername(), 
+	            joueur.getMotDePasse(), 
+	            joueur.getEmail(), 
+	            joueur.getNbPieces(), 
+	            joueur.getSkins(), 
+	            joueur.getScore(), 
+	            joueur.getId()
+	        );
+
+	        // Exécution de la requête
+	        int statut = preparedStatement.executeUpdate();
+	        
+	        // Vérification du statut de la requête
+	        if (statut == 0) {
+	            throw new DAOException("Échec de la mise à jour du joueur, aucune ligne modifiée.");
+	        }
+
+	    } catch (SQLException e) {
+	        throw new DAOException("Erreur lors de la mise à jour du Joueur : " + e.getMessage(), e);
+	    } finally {
+	        // Fermeture des ressources
+	        DAOUtilitaire.fermeturesSilencieuses(preparedStatement, connexion);
+	    }
 	}
 	
 

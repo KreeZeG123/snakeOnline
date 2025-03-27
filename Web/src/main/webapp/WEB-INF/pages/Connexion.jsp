@@ -15,7 +15,7 @@
         <%@ include file="../partials/Menu.jsp" %>
     </div>
     <div class="container d-flex justify-content-center align-items-center" style="height: 75vh;">
-        <div class="card p-4 shadow-lg text-center" style="width: 400px;">
+        <div class="card bg-dark text-light p-4 shadow-lg text-center" style="width: 400px;">
             <c:if test="${empty sessionScope.joueurID}">
             	<form action="connexion" method="POST">
 	                <h2 class="text-center mb-4">Connexion</h2>
@@ -29,7 +29,7 @@
 	                    	placeholder="Entrez votre nom d'utilisateur"
 							value="<c:out value="${joueur.username}"/>"
 	                   	>
-	                   	<span class="erreur">${ (form.erreurs['username'] == null) ? form.erreurs['usernameAndPassword'] : form.erreurs['username']}</span>
+	                   	<span class="text-danger">${ (form.erreurs['username'] == null) ? form.erreurs['usernameAndPassword'] : form.erreurs['username']}</span>
 	                </div>
 	
 	                <!-- Champ Mot de passe -->
@@ -39,13 +39,13 @@
 	                    	placeholder="Entrez votre mot de passe"
 							value=""
 	                   	>
-	                   	<span class="erreur">${ empty form.erreurs['password'] ? form.erreurs['usernameAndPassword'] : form.erreurs['password']}</span>
+	                   	<span class="text-danger">${ empty form.erreurs['password'] ? form.erreurs['usernameAndPassword'] : form.erreurs['password']}</span>
 	                </div>
 	
 	                <!-- Bouton de soumission -->
-	                <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+	                <button type="submit" class="btn btn-info w-100">Se connecter</button>
 	                <p class="text-center mt-3">Pas encore de compte ?  
-	                    <a href="inscription" class="text-decoration-none">S'inscrire</a>
+	                    <a href="inscription" class="text-decoration-none text-info">S'inscrire</a>
 	                </p>
 	            </form>
             </c:if>
