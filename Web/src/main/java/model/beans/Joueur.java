@@ -21,8 +21,8 @@ public class Joueur {
 		this.score = score;
 	}
 	
-	public List<String> getSkins() {
-		return Arrays.asList(this.skins.split(":"));
+	public String getSkins() {
+		return skins;
 	}
 	
 	public void addSkins(Item item) {

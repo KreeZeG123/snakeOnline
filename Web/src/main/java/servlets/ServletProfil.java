@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import model.beans.Item;
 import model.beans.Joueur;
+import model.dao.factory.DAOFactory;
+import model.dao.interfaces.ItemDAO;
+import model.dao.interfaces.JoueurDao;
 
 /**
  * Servlet implementation class ServletProfil
@@ -24,13 +27,12 @@ public class ServletProfil extends HttpServlet {
 	
 	private static final String PROFIL_JSP = "/WEB-INF/pages/Profil.jsp";
        
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public ServletProfil() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+	private ItemDAO itemDao;
+    
+    public void init() throws ServletException{
+    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	this.itemDao = daoFactory.getItemDAO();
+	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,38 +43,11 @@ public class ServletProfil extends HttpServlet {
 		joueur.setUsername("Nathan");
 		joueur.setMotDePasse("nathanmdp");
 		joueur.setScore(350);
-		joueur.setSkins("1 2");
+		joueur.setSkins("1,2");
 		
 		request.setAttribute("joueur", joueur);
 		
-		ArrayList<Item> items = new ArrayList<>();
-		
-		Item itemCamouflage = new Item();
-		itemCamouflage.setId(1);
-		itemCamouflage.setTitle("Skin Serpent Camouflage");
-		itemCamouflage.setDescription("Un magnifique skin camouflage pour votre serpent.");
-		itemCamouflage.setPrice(100);
-		itemCamouflage.setImage("/images/items/skin_camouflage.png");
-		items.add(itemCamouflage);
-		
-		Item itemNeon = new Item();
-		itemNeon.setId(2);
-		itemNeon.setTitle("Skin Serpent Néon");
-		itemNeon.setDescription("Un serpent lumineux aux couleurs vives avec un effet néon dynamique.");
-		itemNeon.setPrice(150);
-		itemNeon.setImage("/images/items/skin_neon.png");
-		items.add(itemNeon);
-		
-		Item itemDragon = new Item();
-		itemDragon.setId(3);
-		itemDragon.setTitle("Skin Serpent Dragon Chinois");
-		itemDragon.setDescription("Transformez votre serpent en un majestueux dragon chinois aux écailles dorées.");
-		itemDragon.setPrice(200);
-		itemDragon.setImage("/images/items/skin_dragon_chinois.png");
-		items.add(itemDragon);
-		
-		items.add(itemNeon);
-		items.add(itemCamouflage);
+		ArrayList<Item> items = itemDao.getItemsById(joueur.getSkins());
 		
 		request.setAttribute(ITEMS_ATTR, items);
 		
