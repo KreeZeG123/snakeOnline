@@ -1,12 +1,37 @@
 package model.beans;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class Joueur {
 	
 	private long id; 
 	private String username;
 	private String motDePasse;
 	private int nbPieces;
+	private String skins;
+	private int score;
 	
+	public int getScore() {
+		return score;
+	}
+	
+	public void setScore(int score) {
+		this.score = score;
+	}
+	
+	public List<String> getSkins() {
+		return Arrays.asList(this.skins.split(":"));
+	}
+	
+	public void addSkins(Item item) {
+		this.skins+=item.getId()+":";
+	}
+	
+	public void setSkins(String skins) {
+		this.skins = skins;
+	}
 	public long getId() {
 		return id;
 	}
