@@ -11,19 +11,27 @@
 	</head>
 	<body>
 		<%@ include file="../partials/Menu.jsp" %>
-		<div class="d-flex flex-column justify-content-center align-items-center">
-			<div class="text-center p-5 bg-dark text-white rounded">
+		<div class="d-flex flex-column text-break justify-content-center align-items-center">
+			<div class="text-center py-3 bg-dark text-white rounded" style="width: 60vw;" >
 		        <h1>Bienvenue sur SnakeOnline</h1>
-		        <p>Connectez-vous pour jouer et grimper dans les classements !</p>
+		        <h3>Connectez-vous pour jouer et grimper dans les classements !</h3>
 		        
 		        <div class="container text-center mt-4">
 			        <a href="connexion" class="btn btn-primary">Se connecter</a>
 			    </div>
-          <ul class="list-unstyled">
-		        <c:forEach items="${ utilisateurs }" var="utilisateur" varStatus="status">
-					    <li>N°<c:out value="${ status.count }" /> : <c:out value="${ utilisateur.username }" /> !</li>
-					  </c:forEach>
-		      </ul>
+         		<ul class="list-unstyled">
+       				<c:forEach items="${ utilisateurs }" var="utilisateur" varStatus="status">
+			    		<li>N°<c:out value="${ status.count }" /> : <c:out value="${ utilisateur.username }" /> !</li>
+			    	</c:forEach>
+		        </ul>
+		        <div class="m-4 px-5 ">
+		        	<h5>Dans ce célèbre jeu en 2 dimensions, le but est de manger des pommes pour faire grandir votre snake 
+		        	et ainsi tenter de manger votre adversaire. De plus, des items aléatoires peuvent apparaître sur la 
+		        	carte pour vous aider ou peut-être vous pénaliser</h5>
+		        </div>
+		        <div class="text-center pt-3 bg-dark text-white rounded">
+		       		<img src="<c:url value="/images/snakegame.png"/>" style="width: 70%; height: auto;">
+		    	</div>
 		    </div>
 	   	</div>
 	</body>
