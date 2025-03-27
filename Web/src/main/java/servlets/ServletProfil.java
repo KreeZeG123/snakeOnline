@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import model.beans.Item;
 import model.beans.Joueur;
-import model.dao.JoueurDao;
 
 /**
  * Servlet implementation class ServletProfil

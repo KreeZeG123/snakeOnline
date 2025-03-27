@@ -1,6 +1,5 @@
 package model.beans;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,10 +7,11 @@ public class Joueur {
 	
 	private long id = -1; 
 	private String username = "";
+	private String email = "";
 	private String motDePasse = "";
 	private int nbPieces = 0;
 	private String skins = "";
-	private int score = "";
+	private int score = 0;
 	
 	public int getScore() {
 		return score;
