@@ -86,21 +86,25 @@ public class FormInscription extends FormBase {
 	        setErreur( CHAMP_CONFIRM_MOT_DE_PASSE, null );
 	    }
 
-	    /*
-	     * Utilisation de la bibliothèque Jasypt pour chiffrer le mot de passe
-	     * efficacement.
-	     * 
-	     * L'algorithme SHA-256 est ici utilisé, avec par défaut un salage
-	     * aléatoire et un grand nombre d'itérations de la fonction de hashage.
-	     * 
-	     * La String retournée est de longueur 56 et contient le hash en Base64.
-	     */
-	    ConfigurablePasswordEncryptor passwordEncryptor = new ConfigurablePasswordEncryptor();
-	    passwordEncryptor.setAlgorithm( ALGO_CHIFFREMENT );
-	    passwordEncryptor.setPlainDigest( false );
-	    String motDePasseChiffre = passwordEncryptor.encryptPassword( motDePasse );
+	    try {
+	    	/*
+		     * Utilisation de la bibliothèque Jasypt pour chiffrer le mot de passe
+		     * efficacement.
+		     * 
+		     * L'algorithme SHA-256 est ici utilisé, avec par défaut un salage
+		     * aléatoire et un grand nombre d'itérations de la fonction de hashage.
+		     * 
+		     * La String retournée est de longueur 56 et contient le hash en Base64.
+		     */
+		    ConfigurablePasswordEncryptor passwordEncryptor = new ConfigurablePasswordEncryptor();
+		    passwordEncryptor.setAlgorithm( ALGO_CHIFFREMENT );
+		    passwordEncryptor.setPlainDigest( false );
+		    String motDePasseChiffre = passwordEncryptor.encryptPassword( motDePasse );
 
-	    joueur.setMotDePasse( motDePasseChiffre );
+		    joueur.setMotDePasse( motDePasseChiffre );
+		} catch (Exception e) {
+			throw new DAOException( e );
+		}
 	}
 	
 	private void validationUsername( String username ) throws FormValidationException {

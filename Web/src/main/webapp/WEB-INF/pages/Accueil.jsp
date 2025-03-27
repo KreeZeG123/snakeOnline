@@ -17,7 +17,7 @@
 		        <h3>Connectez-vous pour jouer et grimper dans les classements !</h3>
 		        
 		        <div class="container text-center mt-4">
-			        <a href="connexion" class="btn btn-primary">Se connecter</a>
+			        <a href="connexion" class="btn btn-info">Se connecter</a>
 			    </div>
          		<ul class="list-unstyled">
        				<c:forEach items="${ utilisateurs }" var="utilisateur" varStatus="status">

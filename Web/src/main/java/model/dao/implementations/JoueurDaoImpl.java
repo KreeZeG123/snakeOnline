@@ -15,14 +15,41 @@ public class JoueurDaoImpl implements JoueurDao {
 	
 	private DAOFactory daoFactory;
 	
-	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, date_inscription FROM joueurs WHERE username = ?";
-	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, mot_de_passe, email, nb_pieces, date_inscription FROM joueurs WHERE email = ?";
+	private static final String SQL_SELECT_PAR_ID = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE id = ?";
+	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE username = ?";
+	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE email = ?";
 	
-	private static final String SQL_INSERT = "INSERT INTO joueurs (username, email, mot_de_passe, nb_pieces, date_inscription) VALUES (?, ?, ?, ?, NOW())";
+	private static final String SQL_INSERT = "INSERT INTO joueurs (username, email, mot_de_passe, nb_pieces, skins, score, date_inscription) VALUES (?, ?, ?, ?, ?, ?, NOW())";
 	
     public JoueurDaoImpl( DAOFactory daoFactory ) {
         this.daoFactory = daoFactory;
     }
+    
+    /* Implémentation de la méthode définie dans l'interface JoueurDao */
+	@Override
+	public Joueur trouverParId( Long joueurID ) throws DAOException {
+		Connection connexion = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		Joueur Joueur = null;
+
+		try {
+			/* Récupération d'une connexion depuis la Factory */
+			connexion = daoFactory.getConnection();
+			preparedStatement = DAOUtilitaire.initialisationRequetePreparee( connexion, SQL_SELECT_PAR_ID, false, joueurID );
+			resultSet = preparedStatement.executeQuery();
+			/* Parcours de la ligne de données de l'éventuel ResulSet retourné */
+			if ( resultSet.next() ) {
+				Joueur = map( resultSet );
+			}
+		} catch ( SQLException e ) {
+			throw new DAOException( e );
+		} finally {
+			DAOUtilitaire.fermeturesSilencieuses( resultSet, preparedStatement, connexion );
+		}
+
+		return Joueur;
+	}
     
     /* Implémentation de la méthode définie dans l'interface JoueurDao */
 	@Override
@@ -78,7 +105,7 @@ public class JoueurDaoImpl implements JoueurDao {
 
     /* Implémentation de la méthode définie dans l'interface JoueurDao */
 	@Override
-	public void creerJoueur( Joueur Joueur ) throws DAOException {
+	public void creerJoueur( Joueur joueur ) throws DAOException {
 		Connection connexion = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet valeursAutoGenerees = null;
@@ -86,7 +113,7 @@ public class JoueurDaoImpl implements JoueurDao {
 		try {
 			/* Récupération d'une connexion depuis la Factory */
 			connexion = daoFactory.getConnection();
-			preparedStatement = DAOUtilitaire.initialisationRequetePreparee( connexion, SQL_INSERT, true, Joueur.getUsername(), Joueur.getEmail(), Joueur.getMotDePasse(), Joueur.getNbPieces() );
+			preparedStatement = DAOUtilitaire.initialisationRequetePreparee( connexion, SQL_INSERT, true, joueur.getUsername(), joueur.getEmail(), joueur.getMotDePasse(), joueur.getNbPieces(), joueur.getSkins(), joueur.getScore() );
 			int statut = preparedStatement.executeUpdate();
 			/* Analyse du statut retourné par la requête d'insertion */
 			if ( statut == 0 ) {
@@ -96,7 +123,7 @@ public class JoueurDaoImpl implements JoueurDao {
 			valeursAutoGenerees = preparedStatement.getGeneratedKeys();
 			if ( valeursAutoGenerees.next() ) {
 				/* Puis initialisation de la propriété id du bean Joueur avec sa valeur */
-				Joueur.setId( valeursAutoGenerees.getLong( 1 ) );
+				joueur.setId( valeursAutoGenerees.getLong( 1 ) );
 			} else {
 				throw new DAOException( "Échec de la création du Joueur en base, aucun ID auto-généré retourné." );
 			}
@@ -120,6 +147,8 @@ public class JoueurDaoImpl implements JoueurDao {
 		joueur.setEmail( resultSet.getString( "email") );
 		joueur.setMotDePasse( resultSet.getString( "mot_de_passe" ) );
 		joueur.setNbPieces( resultSet.getInt( "nb_pieces" ) );
+		joueur.setSkins( resultSet.getString( "skins" ) );
+		joueur.setScore( resultSet.getInt( "score" ) );
 		return joueur;
 	}
 

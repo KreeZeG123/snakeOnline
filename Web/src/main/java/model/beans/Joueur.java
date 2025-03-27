@@ -1,8 +1,5 @@
 package model.beans;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class Joueur {
 	
 	private long id = -1; 

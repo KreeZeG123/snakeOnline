@@ -8,7 +8,6 @@
     <title>Inscription</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-	<link href="css/style.css" rel="stylesheet" />
 </head>
 <body>
     <div>
@@ -28,7 +27,7 @@
                     	placeholder="Entrez votre nom d'utilisateur"
                     	value="<c:out value="${joueur.username}"/>"
                    	>
-                   	<span class="erreur">${form.erreurs['username']}</span>
+                   	<span class="text-danger">${form.erreurs['username']}</span>
                 </div>
 
                 <!-- Champ Email -->
@@ -38,7 +37,7 @@
                     	required placeholder="Entrez votre email"
                     	value="<c:out value="${joueur.email}"/>"
                    	>
-                 	<span class="erreur">${form.erreurs['email']}</span>
+                 	<span class="text-danger">${form.erreurs['email']}</span>
                 </div>
 
                 <!-- Champ Mot de passe -->
@@ -48,7 +47,7 @@
                     	placeholder="Entrez votre mot de passe"
                     	value=""
                    	>
-                   	<span class="erreur">${form.erreurs['password']}</span>
+                   	<span class="text-danger">${form.erreurs['password']}</span>
                 </div>
 
                 <!-- Champ Confirmation du mot de passe -->
@@ -58,7 +57,7 @@
 						placeholder="Confirmez votre mot de passe"
 						value=""
 					>
-					<span class="erreur">${form.erreurs['confirm-password']}</span>
+					<span class="text-danger">${form.erreurs['confirm-password']}</span>
                 </div>
 
                 <!-- Bouton d'inscription -->

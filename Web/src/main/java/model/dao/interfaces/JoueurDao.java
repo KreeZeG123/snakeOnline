@@ -5,6 +5,8 @@ import model.dao.exceptions.DAOException;
 
 public interface JoueurDao {
 
+	Joueur trouverParId(Long joueurID) throws DAOException;
+	
 	Joueur trouverParUsername( String username ) throws DAOException;
 
     Joueur trouverParEmail( String email ) throws DAOException;

@@ -8,6 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import model.beans.Item;
 import model.beans.Joueur;
@@ -24,32 +25,34 @@ public class ServletProfil extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String ITEMS_ATTR = "items";
+	private static final String ATT_JOUEUR = "joueur";
+	private static final String ATT_JOUEUR_ID_SESSION = "joueurID";
 	
 	private static final String PROFIL_JSP = "/WEB-INF/pages/Profil.jsp";
        
-	private ItemDAO itemDao;
+	private JoueurDao joueurDAO;
+  private ItemDAO itemDao;
     
     public void init() throws ServletException{
     	DAOFactory daoFactory = DAOFactory.getInstance();
-    	this.itemDao = daoFactory.getItemDAO();
+    	this.joueurDAO = daoFactory.getJoueurDao();
+      this.itemDao = daoFactory.getItemDAO();
 	}
-
+	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Joueur joueur = new Joueur();
-		joueur.setNbPieces(55);
-		joueur.setUsername("Nathan");
-		joueur.setMotDePasse("nathanmdp");
-		joueur.setScore(350);
-		joueur.setSkins("1,2");
-		
-		request.setAttribute("joueur", joueur);
-		
+
 		ArrayList<Item> items = itemDao.getItemsById(joueur.getSkins());
 		
-		request.setAttribute(ITEMS_ATTR, items);
+		// Obtention du joueur
+		HttpSession session = request.getSession();
+		Long joueurIDString = (Long) session.getAttribute(ATT_JOUEUR_ID_SESSION);
+		Joueur joueur = this.joueurDAO.trouverParId(joueurIDString);
+		
+		request.setAttribute( ATT_JOUEUR, joueur );
+		request.setAttribute( ITEMS_ATTR, items );
 		
 		this.getServletContext().getRequestDispatcher(PROFIL_JSP).forward(request,response);
 	}
