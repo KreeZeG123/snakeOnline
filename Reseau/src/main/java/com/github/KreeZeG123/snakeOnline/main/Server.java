@@ -139,7 +139,7 @@ public class Server {
 
     public void running_game(InputMap map) {
         // Création du jeu
-        this.snakeGame = new SnakeGame(100, map);
+        this.snakeGame = new SnakeGame(10000, map);
         // Boucle de jeu
         boolean gameIsFinished = false;
         while (this.serverIsOn) {

@@ -16,10 +16,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MainServer {
@@ -117,8 +114,9 @@ public class MainServer {
                         System.out.println("Demande informations user");
                         LoginDTO loginDTODemandeInfo = receivedProtocol.getData();
                         ///Verification du login si il est deja utilisé
-                        InfoUserDTO infoUserDTODemandeInfo = new InfoUserDTO(loginDTODemandeInfo.getLogin(),new String[0], 0);
+                        InfoUserDTO infoUserDTODemandeInfo = new InfoUserDTO(loginDTODemandeInfo.getLogin(), new String[]{"snake_dragon.png","snake_camouflage.png","snake_neon.png"}, 0);
                         System.out.println("huhuihhhuh" + loginDTODemandeInfo.getLogin());
+                        System.out.println("Cosmtiques : " + Arrays.toString(infoUserDTODemandeInfo.getCosmetiques()));
                         //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
                         Protocol sendingProtocolDemandeInfoUser = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "RetourDemandeInfoUser", infoUserDTODemandeInfo);
                         sortie.println(sendingProtocolDemandeInfoUser.serialize());
