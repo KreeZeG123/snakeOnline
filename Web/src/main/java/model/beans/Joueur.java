@@ -23,7 +23,7 @@ public class Joueur {
 	}
 	
 	public void addSkins(Item item) {
-		this.skins+=item.getId()+":";
+		this.skins+=item.getId()+",";
 	}
 	
 	public void setSkins(String skins) {

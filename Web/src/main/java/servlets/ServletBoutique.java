@@ -11,9 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import model.beans.Item;
 import model.dao.factory.DAOFactory;
-import model.dao.implementations.ItemDaoImpl;
 import model.dao.interfaces.ItemDAO;
-import model.dao.interfaces.JoueurDao;
+import model.forms.FormAcheterItem;
 
 /**
  * Servlet implementation class ServletBoutique
@@ -40,6 +39,11 @@ public class ServletBoutique extends HttpServlet {
 		ArrayList<Item> items = itemDAO.getItems();
 		
 		request.setAttribute("items", items);
+		
+		/* Récupérer le formulaire d'achat d'objet stocké dans la session */
+	    FormAcheterItem form = (FormAcheterItem) request.getSession().getAttribute("form");
+	    request.getSession().removeAttribute("form");
+	    request.setAttribute("form", form);
 		
 		this.getServletContext().getRequestDispatcher(BOUTIQUE_JSP).forward(request,response);
 	}

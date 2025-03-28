@@ -29,9 +29,12 @@ public class FormConnexion extends FormBase {
 	    Joueur joueur = new Joueur();
 	    try {
 	    	joueur = traiterUsername( username );
-	    	
-	    	String motDePasseChiffreStocke = joueur.getMotDePasse();
-	    	traiterMotsDePasse(motDePasse, motDePasseChiffreStocke);
+	    	if (!joueur.getMotDePasse().isBlank()) {
+	    		String motDePasseChiffreStocke = joueur.getMotDePasse();
+		    	traiterMotsDePasse(motDePasse, motDePasseChiffreStocke);
+	    	}else {
+	    		
+	    	}
 	        if ( erreurs.isEmpty() ) {
 	            resultat = "Succès de la connexion.";
 	        } else {
@@ -43,7 +46,7 @@ public class FormConnexion extends FormBase {
 	        resultat = "Échec de la connexion : une erreur imprévue est survenue, merci de réessayer dans quelques instants.";
 	        e.printStackTrace();
 	    }
-
+	    
 	    return joueur;
 	}
 	
@@ -72,7 +75,6 @@ public class FormConnexion extends FormBase {
 	    	}
 	    	else {
 	    		setErreur( CHAMP_MOT_DE_PASSE, e.getMessage() );
-	    		System.out.println(getErreur(CHAMP_USERNAME));
 	    		if ( getErreur(CHAMP_USERNAME) == null ) {
 	    			setErreur( CHAMP_USERNAME, "");
 	    		}
@@ -95,7 +97,7 @@ public class FormConnexion extends FormBase {
     }
 
     private void validationMotDePasse(String motDePasse, String motDePasseChiffreStocke) throws FormValidationException {
-        if (motDePasse == null || motDePasse.trim().isEmpty()) {
+        if (motDePasse == null || motDePasse.isBlank()) {
             throw new FormValidationException("Merci d'entrer un mot de passe.");
         }
 

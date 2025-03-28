@@ -12,5 +12,7 @@ public interface JoueurDao {
     Joueur trouverParEmail( String email ) throws DAOException;
 
 	void creerJoueur(Joueur joueur) throws DAOException;
+	
+	void updateJoueur( Joueur joueur ) throws DAOException;
 
 }

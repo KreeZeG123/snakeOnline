@@ -14,7 +14,7 @@
         <%@ include file="../partials/Menu.jsp" %>
     </div>
     <div class="container d-flex justify-content-center align-items-center" style="height: 75vh;">
-        <div class="card p-4 shadow-lg" style="width: 400px;">
+        <div class="card bg-dark text-light p-4 shadow-lg" style="width: 400px;">
             <form action="inscription" method="POST">
                 <h2 class="text-center mb-4">Inscription</h2>
                 
@@ -61,11 +61,11 @@
                 </div>
 
                 <!-- Bouton d'inscription -->
-                <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
+                <button type="submit" class="btn btn-info w-100">S'inscrire</button>
 
                 <!-- Lien vers la connexion -->
                 <p class="text-center mt-3">Déjà un compte ?  
-                    <a href="connexion" class="text-decoration-none">Se connecter</a>
+                    <a href="connexion" class="text-decoration-none text-info">Se connecter</a>
                 </p>
             </form>
         </div>

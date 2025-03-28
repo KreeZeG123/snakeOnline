@@ -21,14 +21,12 @@ CREATE TABLE joueurs (
     score INT DEFAULT 0,
     date_inscription DATE NOT NULL DEFAULT (CURRENT_DATE)
 );
-
-
 CREATE TABLE items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
     price INT NOT NULL,
-    image VARCHAR(25) NOT NULL
+    image VARCHAR(255) NOT NULL
 );
 ```
 
@@ -42,4 +40,6 @@ VALUES ('Skin Serpent Néon', 'Un serpent lumineux aux couleurs vives avec un ef
 
 INSERT INTO items (title, description, price, image)
 VALUES ('Skin Serpent Dragon Chinois', 'Transformez votre serpent en un majestueux dragon chinois aux écailles dorées.', 200, '/images/items/skin_dragon_chinois.png');
+
+UPDATE joueurs SET nb_pieces = 250 WHERE id = 2;
 ```
