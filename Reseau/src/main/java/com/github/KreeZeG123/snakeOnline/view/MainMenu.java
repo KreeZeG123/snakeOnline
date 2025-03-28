@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -33,6 +34,7 @@ public class MainMenu {
     private int nbPieces;
     private String[] cosmetiques;
     private String userName;
+    private String skinChoisie;
     public MainMenu() throws Exception {
         this.nbPieces = 0;
         cosmetiques = new String[3];
@@ -294,22 +296,24 @@ public class MainMenu {
         JButton profilButton = new JButton("Profil");
         profilButton.setFont(subtitleFont);
 
+        LoginDTO loginDTO = new LoginDTO(this.userName,null);
+        System.out.println("nooooooooooom" + loginDTO.getLogin());
+        Protocol sendingDemandeInfoUserProtocol = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeInfoUser",loginDTO);
+        sortie.println(sendingDemandeInfoUserProtocol.serialize());
+        try {
+            String messageRecu = entree.readLine();
+            Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
+            InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
+            nbPieces = infoUserDTO.getNbPieces();
+            cosmetiques = infoUserDTO.getCosmetiques();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        setProfilPanel(profilPanel,cardLayout,cardPanel,gbc);
+
         profilButton.addActionListener(actionEvent -> {
-            LoginDTO loginDTO = new LoginDTO(this.userName,null);
-            System.out.println("nooooooooooom" + loginDTO.getLogin());
-            Protocol sendingDemandeInfoUserProtocol = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeInfoUser",loginDTO);
-            sortie.println(sendingDemandeInfoUserProtocol.serialize());
-            try {
-                String messageRecu = entree.readLine();
-                Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
-                InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
-                nbPieces = infoUserDTO.getNbPieces();
-                cosmetiques = infoUserDTO.getCosmetiques();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            setProfilPanel(profilPanel,cardLayout,cardPanel,gbc);
-            cardLayout.show(cardPanel,"profilPanel");
+            updateCosmetiques(profilPanel, gbc);
+            cardLayout.show(cardPanel, "profilPanel");
         });
 
         partyPanel.add(profilButton);
@@ -377,7 +381,7 @@ public class MainMenu {
 
     public void setProfilPanel(JPanel profilPanel, CardLayout cardLayout,JPanel cardPanel, GridBagConstraints gbc){
         JButton backButton = new JButton("Retour");
-        System.out.println(this.userName);
+        backButton.addActionListener(actionEvent -> cardLayout.show(cardPanel, "partyPanel"));
 
         JLabel userNameLabel = new JLabel("Profil de : " + this.userName);
         userNameLabel.setFont(titleFont);
@@ -388,15 +392,56 @@ public class MainMenu {
         JLabel cosmetiquesLabel = new JLabel("Liste des cosmétiques : ");
         cosmetiquesLabel.setFont(inputFont);
 
-        backButton.addActionListener(actionEvent -> {
-            cardLayout.show(cardPanel,"partyPanel");
-        });
+        JPanel cosmetiqueGrid = new JPanel(new GridLayout(1,cosmetiques.length));
+        for(int i = 0 ; i < cosmetiques.length; i++){
+            cosmetiqueGrid.add(new JButton(cosmetiques[i]));
+        }
+
         profilPanel.add(backButton, gbc);
         profilPanel.add(userNameLabel, gbc);
         profilPanel.add(nbPiecesLabel,gbc);
         profilPanel.add(cosmetiquesLabel,gbc);
+        profilPanel.add(cosmetiqueGrid,gbc);
     }
 
+    public void updateCosmetiques(JPanel profilPanel, GridBagConstraints gbc){
+        ImageIcon imageIcon;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        profilPanel.remove(4);
+        LoginDTO loginDTO =  new LoginDTO(this.userName,null);
+        Protocol sendingProtocolGameList = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeInfoUser",loginDTO);
+        sortie.println(sendingProtocolGameList.serialize());
+        String messageRecu;
+        try{
+            System.out.println("bonjour");
+            messageRecu = entree.readLine();
+            System.out.println("bonjour2");
+            Protocol receivedProtocol = Protocol.deserialize(messageRecu);
+            InfoUserDTO infoUserDTO = receivedProtocol.getData();
+            cosmetiques = infoUserDTO.getCosmetiques();
+            System.out.println("Cosmetqiuese : " + Arrays.toString(cosmetiques));
+            JPanel cosmetiqueGrid = new JPanel(new GridLayout(1,cosmetiques.length));
+            for(int i = 0 ; i < cosmetiques.length; i++){
+                URL imageUrl = classLoader.getResource("skins/" + cosmetiques[i]);
+                if (imageUrl == null) {
+                    System.out.println("⚠️ Image non trouvée : skins/" + cosmetiques[i] + ".png");
+                } else {
+                    System.out.println("✔ Image trouvée : " + imageUrl);
+                }
+                assert imageUrl != null;
+                imageIcon = new ImageIcon(imageUrl);
+                JButton button = new JButton(imageIcon);
+                button.addActionListener(actionEvent -> {
+                    this.skinChoisie = imageUrl.toString();
+                });
+                button.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+                cosmetiqueGrid.add(button);
+            }
+            profilPanel.add(cosmetiqueGrid,gbc);
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         new MainMenu();

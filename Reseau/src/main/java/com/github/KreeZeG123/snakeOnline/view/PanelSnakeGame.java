@@ -168,7 +168,8 @@ public class PanelSnakeGame extends JPanel{
 				if(featuresSnake.getColorSnake() == ColorSnake.Green) {
 					// Utiliser le ClassLoader pour charger l'image
 					ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-					URL imageUrl = classLoader.getResource("images/snake_green_" + cpt_img + ".png");
+					URL imageUrl = classLoader.getResource("images/snake_dragon_" + cpt_img + ".png");
+					System.out.println(imageUrl);
 					if (imageUrl == null) {
 						throw new IOException("Image non trouvée dans le classpath.");
 					}
