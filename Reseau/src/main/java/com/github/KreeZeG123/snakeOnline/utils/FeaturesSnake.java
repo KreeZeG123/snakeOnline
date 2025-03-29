@@ -12,6 +12,7 @@ public class FeaturesSnake {
 	private AgentAction lastAction;
 	
 	ColorSnake colorSnake;
+	String skinID;
 	
 	boolean isInvincible;
 	boolean isSick;

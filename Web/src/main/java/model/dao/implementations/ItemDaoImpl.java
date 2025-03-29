@@ -35,7 +35,7 @@ public class ItemDaoImpl implements ItemDAO{
     		connexion = daoFactory.getConnection();
     		preparedStatement = connexion.prepareStatement(SQL_SELECT_ITEMS);
     		resultSet = preparedStatement.executeQuery();
-    		/* Parcours de la ligne de données de l'éventuel ResulSet retourné */
+    		/* Parcours des lignes de données de l'éventuel ResulSet retourné */
     		while ( resultSet.next() ) {
     			items.add(map(resultSet));
     		}

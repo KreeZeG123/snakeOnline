@@ -1,4 +1,4 @@
-package servlets;
+package servlets.pages;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +50,12 @@ public class ServletProfil extends HttpServlet {
 		Joueur joueur = this.joueurDAO.trouverParId(joueurIDString);
 		
 		// Obtention des skins
-		ArrayList<Item> items = itemDao.getItemsById(joueur.getSkins());
+		ArrayList<Item> items;
+		if ( joueur != null) {
+			items = itemDao.getItemsById(joueur.getSkins());
+		} else {
+			items = new ArrayList<Item>();
+		}
 		
 		request.setAttribute( ATT_JOUEUR, joueur );
 		request.setAttribute( ITEMS_ATTR, items );

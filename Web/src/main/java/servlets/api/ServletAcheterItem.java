@@ -1,4 +1,4 @@
-package servlets;
+package servlets.api;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -15,7 +15,7 @@ import model.forms.FormAcheterItem;
 /**
  * Servlet implementation class ServletAcheterItem
  */
-@WebServlet("/acheterItem")
+@WebServlet("/api/acheterItem")
 public class ServletAcheterItem extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;

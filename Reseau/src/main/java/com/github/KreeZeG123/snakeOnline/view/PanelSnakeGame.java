@@ -39,7 +39,8 @@ public class PanelSnakeGame extends JPanel{
 	
 	private double stepx;
 	private double stepy;
-	
+
+	private String skinChoisie;
 	
 	float[] contraste = { 0, 0, 0, 1.0f };
 
@@ -53,14 +54,14 @@ public class PanelSnakeGame extends JPanel{
 	
 	int cpt;
 
-	public PanelSnakeGame(int sizeX, int sizeY, boolean[][] walls, ArrayList<FeaturesSnake> featuresSnakes, ArrayList<FeaturesItem> featuresItems) {
+	public PanelSnakeGame(int sizeX, int sizeY, boolean[][] walls, ArrayList<FeaturesSnake> featuresSnakes, ArrayList<FeaturesItem> featuresItems, String skinChoisie) {
 
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
 		this.walls = walls;	
 		this.featuresSnakes = featuresSnakes;
 		this.featuresItems = featuresItems;
-				
+		this.skinChoisie = skinChoisie;
 	}
 
 	public void paint(Graphics g){
@@ -126,14 +127,16 @@ public class PanelSnakeGame extends JPanel{
 		
 		BufferedImage img = null;
 		
-		
 
 		double pos_x;
 		double pos_y;
 		
 		int cpt_img = -1;
 		
-
+		String skin = featuresSnake.getColorSnake().toString().toLowerCase();
+		if ( skinChoisie != null && !skinChoisie.isBlank() ) {
+			skin = "skin_" + skinChoisie;
+		}
 		
 		for(int i = 0; i < positions.size(); i++) {
 			
@@ -143,21 +146,21 @@ public class PanelSnakeGame extends JPanel{
 
 			if(i == 0) {
 				switch (lastAction) {
-				case MOVE_UP:
-					cpt_img = 0;
-					break;
-				case MOVE_DOWN:
-					cpt_img = 1;	
-					break;
-				case MOVE_RIGHT:
-					cpt_img = 2;
-					break;		
-				case MOVE_LEFT:
-					cpt_img = 3;
-					break;
+					case MOVE_UP:
+						cpt_img = 0;
+						break;
+					case MOVE_DOWN:
+						cpt_img = 1;
+						break;
+					case MOVE_RIGHT:
+						cpt_img = 2;
+						break;
+					case MOVE_LEFT:
+						cpt_img = 3;
+						break;
 
-				default:
-					break;
+					default:
+						break;
 				}
 				
 			} else {	
@@ -165,45 +168,18 @@ public class PanelSnakeGame extends JPanel{
 			}
 			
 			try {
-				if(featuresSnake.getColorSnake() == ColorSnake.Green) {
-					// Utiliser le ClassLoader pour charger l'image
-					ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-					URL imageUrl = classLoader.getResource("images/snake_dragon_" + cpt_img + ".png");
-					System.out.println(imageUrl);
-					if (imageUrl == null) {
-						throw new IOException("Image non trouvée dans le classpath.");
-					}
-					// Charger l'image
-					img = ImageIO.read(imageUrl);
-				} else if(featuresSnake.getColorSnake() == ColorSnake.Red ) {
-					// Utiliser le ClassLoader pour charger l'image
-					ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-					URL imageUrl = classLoader.getResource("images/snake_red_" + cpt_img + ".png");
-					if (imageUrl == null) {
-						throw new IOException("Image non trouvée dans le classpath.");
-					}
-					// Charger l'image
-					img = ImageIO.read(imageUrl);
-				} else if(featuresSnake.getColorSnake() == ColorSnake.Blue ) {
-					// Utiliser le ClassLoader pour charger l'image
-					ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-					URL imageUrl = classLoader.getResource("images/snake_blue_" + cpt_img + ".png");
-					if (imageUrl == null) {
-						throw new IOException("Image non trouvée dans le classpath.");
-					}
-					// Charger l'image
-					img = ImageIO.read(imageUrl);
-				} else if(featuresSnake.getColorSnake() == ColorSnake.Pink) {
-					// Utiliser le ClassLoader pour charger l'image
-					ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-					URL imageUrl = classLoader.getResource("images/snake_pink_" + cpt_img + ".png");
-					if (imageUrl == null) {
-						throw new IOException("Image non trouvée dans le classpath.");
-					}
-					// Charger l'image
-					img = ImageIO.read(imageUrl);
+				// Utiliser le ClassLoader pour charger l'image
+				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+				System.out.println("skin : " + skin);
+				System.out.println("cpt_img : " + cpt_img);
+				String imagePath = "images/snake_" + skin + "_" + cpt_img + ".png";
+				System.out.println("img : " + imagePath);
+				URL imageUrl = classLoader.getResource(imagePath);
+				if (imageUrl == null) {
+					throw new IOException("Image non trouvée dans le classpath : " + imagePath);
 				}
-		
+				// Charger l'image
+				img = ImageIO.read(imageUrl);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

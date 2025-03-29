@@ -1,6 +1,6 @@
-package com.github.KreeZeG123.snakeOnline.model.dto.mainMenu;
+package model.dto.mainMenu;
 
-import com.github.KreeZeG123.snakeOnline.model.dto.DTOInterface;
+import model.dto.DTOInterface;
 
 public abstract class MainMenuDTO implements DTOInterface {
     public String getDataType() {

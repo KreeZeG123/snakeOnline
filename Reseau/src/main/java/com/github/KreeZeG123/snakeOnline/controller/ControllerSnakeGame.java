@@ -23,12 +23,12 @@ public class ControllerSnakeGame extends AbstractController {
      * Constructeur de la classe ControllerSnakeGame
      *
      */
-    public ControllerSnakeGame(InputMap map, Client client) {
+    public ControllerSnakeGame(InputMap map, Client client, String skinChoisie) {
         super();
         this.client = client;
 
         // Initialisation de l'affichage
-        panel = new PanelSnakeGame(map.getSizeX(), map.getSizeY(), map.get_walls(), map.getStart_snakes(), map.getStart_items() );
+        panel = new PanelSnakeGame(map.getSizeX(), map.getSizeY(), map.get_walls(), map.getStart_snakes(), map.getStart_items(), skinChoisie);
         this.viewSnakeGame = new ViewSnakeGame(this,panel);
         // Met la fenêtre commande en visible pour l'afficher par-dessus le jeu
         panel.paint(panel.getGraphics());
@@ -58,11 +58,6 @@ public class ControllerSnakeGame extends AbstractController {
         );
     }
 
-    // Méthode qui est appelée quand l'utilisateur met pause ou unpause via la touche ECHAPPE
-    public void pauseUnpauseFromUser() {
-        //this.viewCommand.pauseUnpause();
-    }
-
     public void envoyerAction(String action) {
         this.client.envoyerAction(action);
     }
@@ -71,12 +66,7 @@ public class ControllerSnakeGame extends AbstractController {
         return game;
     }
 
-    public ViewSnakeGame getViewSnakeGame() {
-        return viewSnakeGame;
-    }
-
-
-    public void onWindowClosed() {
-        this.viewSnakeGame.closeWindow();
+    public void leaveGame() {
+        this.client.leaveGame();
     }
 }

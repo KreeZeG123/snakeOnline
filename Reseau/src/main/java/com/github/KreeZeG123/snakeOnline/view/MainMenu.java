@@ -1,23 +1,22 @@
 package com.github.KreeZeG123.snakeOnline.view;
 
 import com.github.KreeZeG123.snakeOnline.main.Client;
-import com.github.KreeZeG123.snakeOnline.main.MainServer;
+import com.github.KreeZeG123.snakeOnline.model.dto.StringMapDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
 import com.github.KreeZeG123.snakeOnline.model.dto.mainMenu.*;
+import com.github.KreeZeG123.snakeOnline.utils.PasswordEncryptor;
 
-import javax.smartcardio.Card;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 
 
 public class MainMenu {
@@ -32,17 +31,11 @@ public class MainMenu {
     private BufferedReader entree;
     private PrintWriter sortie;
     private int nbPieces;
-    private String[] cosmetiques;
+    private String cosmetiques;
     private String userName;
-    private String skinChoisie;
+    private String skinChoisie = null;
+
     public MainMenu() throws Exception {
-        this.nbPieces = 0;
-        cosmetiques = new String[3];
-        this.socket = new Socket(ip, port);
-        this.entree = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.sortie = new PrintWriter(socket.getOutputStream(), true);
-
-
         JFrame frame = new JFrame("Menu principal");
         frame.setSize(800, 800);
         Dimension windowSize = frame.getSize();
@@ -52,12 +45,17 @@ public class MainMenu {
         int dy = centerPoint.y - windowSize.height / 2;
         frame.setLocation(dx, dy);
 
+        this.nbPieces = 0;
+        cosmetiques = "";
+
         CardLayout cardLayout = new CardLayout();
         JPanel cardPanel = new JPanel(cardLayout);
 
         JButton backButton = new JButton("Retour");
 
         GridBagConstraints gbc = new GridBagConstraints();
+
+        JPanel waitingForServerPanel = new JPanel(new GridBagLayout());
 
         JPanel loginPanel = new JPanel(new GridBagLayout());
 
@@ -69,6 +67,7 @@ public class MainMenu {
 
         JPanel profilPanel = new JPanel(new GridBagLayout());
 
+        cardPanel.add(waitingForServerPanel, "waitingForServerPanel");
         cardPanel.add(loginPanel, "loginPanel");
         cardPanel.add(registerPanel, "registerPanel");
         cardPanel.add(partyPanel, "partyPanel");
@@ -76,17 +75,57 @@ public class MainMenu {
         cardPanel.add(profilPanel, "profilPanel");
 
         setGBC(gbc);
+        setWaitingForServerPanel(waitingForServerPanel, cardLayout, cardPanel, gbc);
         setLoginPanel(loginPanel,cardLayout,cardPanel,gbc,partyPanel,profilPanel);
         setBackButton(backButton,cardLayout,cardPanel);
         setRegisterPanel(registerPanel,gbc,cardLayout,cardPanel,partyPanel,profilPanel);
         setCreateServerPanel(createServerPanel,gbc,cardLayout,cardPanel);
+        setProfilPanel(profilPanel, cardLayout,cardPanel,gbc);
 
         frame.setLayout(new BorderLayout());
         frame.add(cardPanel, BorderLayout.CENTER);
-        cardLayout.show(cardPanel, "loginPanel");
+
+
+        try {
+            this.socket = new Socket(ip, port);
+            this.entree = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.sortie = new PrintWriter(socket.getOutputStream(), true);
+            cardLayout.show(cardPanel, "loginPanel");
+        } catch (ConnectException e) {
+            cardLayout.show(cardPanel, "waitingForServerPanel");
+        }
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+    }
+
+    public void setWaitingForServerPanel(JPanel waitingForServerPanel, CardLayout cardLayout, JPanel cardPanel, GridBagConstraints gbc) {
+        JLabel titleLabel = new JLabel("En attente du serveur principal ...");
+        titleLabel.setFont(titleFont);
+
+        JButton retryButton = new JButton("Réessayer");
+        retryButton.setPreferredSize(new Dimension(100, 40));
+        retryButton.setFont(new Font("Arial", Font.PLAIN, 15));
+        retryButton.setBorder(new EmptyBorder(10, 10, 10, 10)); // Un peu de marge autour du bouton
+        retryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    socket = new Socket(ip, port);
+                    entree = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    sortie = new PrintWriter(socket.getOutputStream(), true);
+                    cardLayout.show(cardPanel, "loginPanel");
+                } catch (ConnectException ec) {
+                    // Ne rien faire
+                }
+                catch (IOException eio) {
+                    throw new RuntimeException(eio);
+                }
+            }
+        });
+
+        waitingForServerPanel.add(titleLabel, gbc);
+        waitingForServerPanel.add(retryButton, gbc);
     }
 
     public void setLoginPanel(JPanel loginPanel, CardLayout cardLayout, JPanel cardPanel, GridBagConstraints gbc,JPanel partyPanel,JPanel profilPanel) {
@@ -97,6 +136,11 @@ public class MainMenu {
         JLabel loginLabel = new JLabel("Nom d'utilisateur");
         loginLabel.setFont(subtitleFont);
 
+        JLabel loginErrorLabel = new JLabel("");
+        loginErrorLabel.setFont(subtitleFont);
+        loginErrorLabel.setForeground(Color.RED);
+
+
         JTextField loginField = new JTextField();
         loginField.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
         loginField.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
@@ -105,6 +149,10 @@ public class MainMenu {
 
         JLabel passwordLabel = new JLabel("Mot de passe");
         passwordLabel.setFont(subtitleFont);
+
+        JLabel passwordErrorLabel = new JLabel("");
+        passwordErrorLabel.setFont(subtitleFont);
+        passwordErrorLabel.setForeground(Color.RED);
 
         JPasswordField passwordField = new JPasswordField();
         passwordField.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
@@ -134,22 +182,61 @@ public class MainMenu {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LoginDTO loginDTO = new LoginDTO(loginField.getText(),Arrays.toString(passwordField.getPassword()));
-                Protocol sendingProtocol =  new Protocol("MainMenuClient", "MainServer",(new Date()).toString(),"MainMenuClientDemandeConnexion",loginDTO);
+                LoginDTO loginDTO = new LoginDTO(
+                        loginField.getText(),
+                        PasswordEncryptor.encryptPassword(String.valueOf(passwordField.getPassword()))
+                );
+                Protocol sendingProtocol =  new Protocol(
+                        "MainMenuClient",
+                        "MainServer",(new Date()).toString(),
+                        "MainMenuClientDemandeConnexion",
+                        loginDTO
+                );
                 sortie.println(sendingProtocol.serialize());
-                String messageRecu = null;
                 try {
-                    messageRecu = entree.readLine();
+                    String messageRecu = entree.readLine();
                     Protocol receivedProtocol = Protocol.deserialize(messageRecu);
-                    InfoUserDTO infoUserDTO = receivedProtocol.getData();
-                    if(receivedProtocol.getMessage().equals("ConnexionAcceptée")){
-                        System.out.println("Connexion acceptée");
-                        nbPieces = infoUserDTO.getNbPieces();
-                        cosmetiques = infoUserDTO.getCosmetiques();
-                        userName = infoUserDTO.getUserName();
-                        System.out.println("USername : " + userName);
-                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
-                        cardLayout.show(cardPanel, "partyPanel");
+                    String message = receivedProtocol.getMessage();
+                    switch (message) {
+                        case "MainServerUserInfoAcknowledged":
+                            System.out.println("Connexion acceptée");
+                            InfoUserDTO infoUserDTO = receivedProtocol.getData();
+                            nbPieces = infoUserDTO.getNbPieces();
+                            cosmetiques = infoUserDTO.getCosmetiques();
+                            userName = infoUserDTO.getUserName();
+                            System.out.println("USername : " + userName);
+                            setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
+                            loginLabel.setText("");
+                            loginErrorLabel.setText("");
+                            passwordLabel.setText("");
+                            passwordErrorLabel.setText("");
+                            cardLayout.show(cardPanel, "partyPanel");
+                            break;
+                        case "MainServerUserInfoRefused":
+                            System.out.println("Connexion refusé");
+                            StringMapDTO stringMapDTO = receivedProtocol.getData();
+                            loginErrorLabel.setText("");
+                            passwordErrorLabel.setText("");
+                            if (stringMapDTO.get("status").equals("echec")) {
+                                String usernameAndPasswordError = stringMapDTO.get("usernameAndPassword");
+                                if (usernameAndPasswordError != null) {
+                                    loginErrorLabel.setText(usernameAndPasswordError);
+                                    passwordErrorLabel.setText(usernameAndPasswordError);
+                                } else {
+                                    String usernameError = stringMapDTO.get("username");
+                                    if ( usernameError != null ) {
+                                        loginErrorLabel.setText(usernameError);
+                                    }
+
+                                    String passwordError = stringMapDTO.get("password");
+                                    if ( passwordError != null ) {
+                                        passwordErrorLabel.setText(passwordError);
+                                    }
+                                }
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
@@ -162,8 +249,10 @@ public class MainMenu {
 
         loginPanel.add(titleLabel, gbc);
         loginPanel.add(loginLabel, gbc);
+        loginPanel.add(loginErrorLabel, gbc);
         loginPanel.add(loginField,gbc);
         loginPanel.add(passwordLabel, gbc);
+        loginPanel.add(passwordErrorLabel, gbc);
         loginPanel.add(passwordField,gbc);
         loginPanel.add(erreurInforamtionsLabel,gbc);
         loginPanel.add(loginButton,gbc);
@@ -196,17 +285,47 @@ public class MainMenu {
         JLabel titleLabel2 = new JLabel("Register");
         titleLabel2.setFont(titleFont);
 
-        JLabel loginLabel2 = new JLabel("Login");
+        JLabel loginLabel2 = new JLabel("Login :");
         loginLabel2.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        JLabel loginErrorLabel2 = new JLabel("");
+        loginErrorLabel2.setFont(subtitleFont);
+        loginErrorLabel2.setForeground(Color.RED);
 
         JTextField loginField2 = new JTextField();
         loginField2.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
         loginField2.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
-
         loginField2.setFont(inputFont);
 
-        JLabel passwordLabel2 = new JLabel("Password");
+        JLabel emailLabel = new JLabel("Email :");
+        emailLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        JLabel emailErrorLabel = new JLabel("");
+        emailErrorLabel.setFont(subtitleFont);
+        emailErrorLabel.setForeground(Color.RED);
+
+        JTextField emailField = new JTextField();
+        emailField.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
+        emailField.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
+        emailField.setFont(inputFont);
+
+        JLabel passwordLabel1 = new JLabel("Password :");
+        passwordLabel1.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        JLabel passwordErrorLabel1 = new JLabel("");
+        passwordErrorLabel1.setFont(subtitleFont);
+        passwordErrorLabel1.setForeground(Color.RED);
+
+        JPasswordField passwordField1 = new JPasswordField();
+        passwordField1.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
+        passwordField1.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
+
+        JLabel passwordLabel2 = new JLabel("Password (Confirm) :");
         passwordLabel2.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        JLabel passwordErrorLabel2 = new JLabel("");
+        passwordErrorLabel2.setFont(subtitleFont);
+        passwordErrorLabel2.setForeground(Color.RED);
 
         JPasswordField passwordField2 = new JPasswordField();
         passwordField2.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
@@ -226,18 +345,71 @@ public class MainMenu {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    RegisterDTO registerDTO = new RegisterDTO(loginField2.getText(), Arrays.toString(passwordField2.getPassword()));
-                    Protocol sendingProtocolRegister = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeEnregistrement",registerDTO);
+                    RegisterDTO registerDTO = new RegisterDTO(
+                            loginField2.getText(),
+                            emailField.getText(),
+                            PasswordEncryptor.encryptPassword(String.valueOf(passwordField1.getPassword())),
+                            PasswordEncryptor.encryptPassword(String.valueOf(passwordField2.getPassword()))
+                    );
+                    Protocol sendingProtocolRegister = new Protocol(
+                            "MainMenuClient",
+                            "MainServer",
+                            (new Date()).toString(),
+                            "MainMenuClientInscription",
+                            registerDTO
+                    );
+
                     sortie.println(sendingProtocolRegister.serialize());
-                    String messageRecu = entree.readLine();
-                    Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
-                    InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
-                    if(receivedProtocolRegister.getMessage().equals("EnregistrementAccepté")){
-                        setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
-                        userName = infoUserDTO.getUserName();
-                        cardLayout.show(cardPanel, "partyPanel");
-                    }else if(receivedProtocolRegister.getMessage().equals("EnregistrementRefusé")){
-                        erreurInforamtionsLabel2.setVisible(true);
+                    try {
+                        String messageRecu = entree.readLine();
+                        Protocol receivedProtocol = Protocol.deserialize(messageRecu);
+                        String message = receivedProtocol.getMessage();
+                        System.out.println(messageRecu);
+                        switch (message) {
+                            case "MainServerInscriptionAcknowledged":
+                                System.out.println("Inscription acceptée");
+                                InfoUserDTO infoUserDTO = receivedProtocol.getData();
+                                nbPieces = infoUserDTO.getNbPieces();
+                                cosmetiques = infoUserDTO.getCosmetiques();
+                                userName = infoUserDTO.getUserName();
+                                System.out.println("USername : " + userName);
+                                setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
+                                cardLayout.show(cardPanel, "partyPanel");
+                                break;
+                            case "MainServerInscriptionRefused":
+                                System.out.println("Inscription refusé");
+                                StringMapDTO stringMapDTO = receivedProtocol.getData();
+                                loginErrorLabel2.setText("");
+                                emailErrorLabel.setText("");
+                                passwordErrorLabel1.setText("");
+                                passwordErrorLabel2.setText("");
+                                if (stringMapDTO.get("status").equals("echec")) {
+                                    String usernameError = stringMapDTO.get("username");
+                                    if ( usernameError != null ) {
+                                        loginErrorLabel2.setText(usernameError);
+                                    }
+
+                                    String emailError = stringMapDTO.get("email");
+                                    if ( emailError != null ) {
+                                        emailErrorLabel.setText(emailError);
+                                    }
+
+                                    String passwordError = stringMapDTO.get("password");
+                                    if ( passwordError != null ) {
+                                        passwordErrorLabel1.setText(passwordError);
+                                    }
+
+                                    String passwordError2 = stringMapDTO.get("confirm-password");
+                                    if ( passwordError2 != null ) {
+                                        passwordErrorLabel2.setText(passwordError2);
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
                     }
 
                 } catch (Exception ex) {
@@ -254,13 +426,23 @@ public class MainMenu {
         registerPanel.add(backButton, gbc);
         registerPanel.add(titleLabel2, gbc);
         registerPanel.add(loginLabel2, gbc);
+        registerPanel.add(loginErrorLabel2, gbc);
         registerPanel.add(loginField2,gbc);
+        registerPanel.add(emailLabel, gbc);
+        registerPanel.add(emailErrorLabel, gbc);
+        registerPanel.add(emailField, gbc);
+        registerPanel.add(passwordLabel1, gbc);
+        registerPanel.add(passwordErrorLabel1, gbc);
+        registerPanel.add(passwordField1,gbc);
         registerPanel.add(passwordLabel2, gbc);
+        registerPanel.add(passwordErrorLabel2, gbc);
         registerPanel.add(passwordField2,gbc);
         registerPanel.add(registerButton2,gbc);
     }
 
     public void setPartyPanel(JPanel partyPanel, GridBagConstraints gbc, CardLayout cardLayout, JPanel cardPanel, JPanel profilPanel) throws IOException {
+
+        partyPanel.removeAll();
 
         JLabel titleLabel3 = new JLabel("Liste des serveurs");
         titleLabel3.setFont(titleFont);
@@ -282,7 +464,7 @@ public class MainMenu {
         connexionServerButton.addActionListener(actionEvent -> {
             int selectedIndex = serversList.getSelectedIndex();
             if(selectedIndex != -1){
-                new Client(serverListInfo.get(selectedIndex)[1], Integer.parseInt(serverListInfo.get(selectedIndex)[2]));
+                new Client(serverListInfo.get(selectedIndex)[1], Integer.parseInt(serverListInfo.get(selectedIndex)[2]), this.userName, this.skinChoisie);
             }
         });
 
@@ -296,23 +478,10 @@ public class MainMenu {
         JButton profilButton = new JButton("Profil");
         profilButton.setFont(subtitleFont);
 
-        LoginDTO loginDTO = new LoginDTO(this.userName,null);
-        System.out.println("nooooooooooom" + loginDTO.getLogin());
-        Protocol sendingDemandeInfoUserProtocol = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeInfoUser",loginDTO);
-        sortie.println(sendingDemandeInfoUserProtocol.serialize());
-        try {
-            String messageRecu = entree.readLine();
-            Protocol receivedProtocolRegister = Protocol.deserialize(messageRecu);
-            InfoUserDTO infoUserDTO = receivedProtocolRegister.getData();
-            nbPieces = infoUserDTO.getNbPieces();
-            cosmetiques = infoUserDTO.getCosmetiques();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        setProfilPanel(profilPanel,cardLayout,cardPanel,gbc);
-
         profilButton.addActionListener(actionEvent -> {
+            System.out.println("test");
             updateCosmetiques(profilPanel, gbc);
+            System.out.println("profilPanel");
             cardLayout.show(cardPanel, "profilPanel");
         });
 
@@ -343,7 +512,7 @@ public class MainMenu {
                     Protocol receivedProtocol = Protocol.deserialize(messageRecu);
                     InfoServerDTO infoServerDTO = receivedProtocol.getData();
                     System.out.println("Port du serveur crée : " + infoServerDTO.getPort());
-                    new Client(infoServerDTO.getIp(),infoServerDTO.getPort());
+                    new Client(infoServerDTO.getIp(),infoServerDTO.getPort(), this.userName, this.skinChoisie);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -372,7 +541,7 @@ public class MainMenu {
             serverListInfo.clear();
             serverListInfo.addAll(serverListDTO.getServerList());
             for(int i = 0; i < serverListInfo.size(); i++){
-                serverListDisplay.add(i,serverListInfo.get(i)[0] + "IP : " + serverListInfo.get(i)[1] + "Port : " + serverListInfo.get(i)[2]);
+                serverListDisplay.add(i,serverListInfo.get(i)[0] + " IP : " + serverListInfo.get(i)[1] + " Port : " + serverListInfo.get(i)[2]);
             }
         }catch(Exception e){
             throw new RuntimeException(e);
@@ -380,6 +549,7 @@ public class MainMenu {
     }
 
     public void setProfilPanel(JPanel profilPanel, CardLayout cardLayout,JPanel cardPanel, GridBagConstraints gbc){
+
         JButton backButton = new JButton("Retour");
         backButton.addActionListener(actionEvent -> cardLayout.show(cardPanel, "partyPanel"));
 
@@ -392,39 +562,96 @@ public class MainMenu {
         JLabel cosmetiquesLabel = new JLabel("Liste des cosmétiques : ");
         cosmetiquesLabel.setFont(inputFont);
 
-        JPanel cosmetiqueGrid = new JPanel(new GridLayout(1,cosmetiques.length));
-        for(int i = 0 ; i < cosmetiques.length; i++){
-            cosmetiqueGrid.add(new JButton(cosmetiques[i]));
+        List<String> cosmetiquesList = Arrays.asList(cosmetiques.split(","));
+        JPanel cosmetiqueGrid = new JPanel(new GridLayout(1,cosmetiquesList.size()));
+        for (String c : cosmetiquesList){
+            cosmetiqueGrid.add(new JButton(c));
         }
+
+        JButton logoutButton = new JButton("Se Deconnecter");
+        logoutButton.addActionListener(actionEvent -> {
+            cardLayout.show(cardPanel, "loginPanel");
+        });
 
         profilPanel.add(backButton, gbc);
         profilPanel.add(userNameLabel, gbc);
         profilPanel.add(nbPiecesLabel,gbc);
         profilPanel.add(cosmetiquesLabel,gbc);
         profilPanel.add(cosmetiqueGrid,gbc);
+        profilPanel.add(logoutButton, gbc);
+
+        Component[] components = profilPanel.getComponents();
+        for (int i = 0 ; i < components.length ; i++){
+            if (components[i] instanceof JButton && ((JButton) components[i]).getText().equals("Se Deconnecter")){
+                System.out.println("logout : " + i);
+            }
+        }
     }
 
     public void updateCosmetiques(JPanel profilPanel, GridBagConstraints gbc){
+        System.out.println("updateCosmetique");
+        System.out.println("username : " + this.userName);
         ImageIcon imageIcon;
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        profilPanel.remove(4);
-        LoginDTO loginDTO =  new LoginDTO(this.userName,null);
-        Protocol sendingProtocolGameList = new Protocol("MainMenuClient","MainServer",(new Date()).toString(),"MainMenuClientDemandeInfoUser",loginDTO);
-        sortie.println(sendingProtocolGameList.serialize());
+
+        // Sauvegarde le bouton logout et le retire (dernier element)
+        JButton btnLogout = (JButton) profilPanel.getComponent(5);
+        profilPanel.remove(profilPanel.getComponents().length - 1);
+        // Retire encore le denier element (grid cosmetique)
+        profilPanel.remove(profilPanel.getComponents().length - 1);
+        StringMapDTO stringMapDTO = new StringMapDTO("username", this.userName);
+        Protocol sendingDemandeInfoUserProtocol = new Protocol(
+                "MainMenuClient",
+                "MainServer",
+                (new Date()).toString(),
+                "MainMenuClientDemandeInfoUser",
+                stringMapDTO
+        );
+        sortie.println(sendingDemandeInfoUserProtocol.serialize());
+        System.out.println("envoyé");
         String messageRecu;
         try{
-            System.out.println("bonjour");
             messageRecu = entree.readLine();
-            System.out.println("bonjour2");
+
             Protocol receivedProtocol = Protocol.deserialize(messageRecu);
             InfoUserDTO infoUserDTO = receivedProtocol.getData();
-            cosmetiques = infoUserDTO.getCosmetiques();
-            System.out.println("Cosmetqiuese : " + Arrays.toString(cosmetiques));
-            JPanel cosmetiqueGrid = new JPanel(new GridLayout(1,cosmetiques.length));
-            for(int i = 0 ; i < cosmetiques.length; i++){
-                URL imageUrl = classLoader.getResource("skins/" + cosmetiques[i]);
+
+            this.userName = infoUserDTO.getUserName();
+            this.nbPieces = infoUserDTO.getNbPieces();
+            this.cosmetiques = infoUserDTO.getCosmetiques();
+
+            ( (JLabel) profilPanel.getComponent(1)).setText("Profil de : " + infoUserDTO.getUserName());
+            ( (JLabel) profilPanel.getComponent(2)).setText("Nombre de pièces : " + infoUserDTO.getNbPieces());
+
+            List<String> cosmetiquesList = Arrays.asList(cosmetiques.split(","));
+            JPanel cosmetiqueGrid = new JPanel(new GridLayout(1,cosmetiquesList.size()));
+            final List<JButton> btns = new ArrayList<>();
+
+            // Ajout btn skin defaut
+            URL defaultSkinImgURL = classLoader.getResource("skins/snake_default_green.png" );
+            if ( defaultSkinImgURL != null ){
+                ImageIcon imageIconDefaultSkin = new ImageIcon(defaultSkinImgURL);
+                JButton button = new JButton(imageIconDefaultSkin);
+                button.addActionListener(actionEvent -> {
+                    for (JButton b : btns){
+                        b.setEnabled(true);
+                    }
+                    button.setEnabled(false);
+                    this.skinChoisie = null;
+                });
+                button.setPreferredSize(new Dimension(imageIconDefaultSkin.getIconWidth(), imageIconDefaultSkin.getIconHeight()));
+                if ( this.skinChoisie  == null ){
+                    button.setEnabled(false);
+                }
+                cosmetiqueGrid.add(button);
+                btns.add(button);
+            }
+
+            // Ajout btn skins unlocked
+            for (String cosmetiqueID : cosmetiquesList){
+                URL imageUrl = classLoader.getResource("skins/snake_skin_" + cosmetiqueID + ".png" );
                 if (imageUrl == null) {
-                    System.out.println("⚠️ Image non trouvée : skins/" + cosmetiques[i] + ".png");
+                    System.out.println("⚠️ Image non trouvée : skins/snake_skin_" + cosmetiqueID + ".png");
                 } else {
                     System.out.println("✔ Image trouvée : " + imageUrl);
                 }
@@ -432,12 +659,27 @@ public class MainMenu {
                 imageIcon = new ImageIcon(imageUrl);
                 JButton button = new JButton(imageIcon);
                 button.addActionListener(actionEvent -> {
-                    this.skinChoisie = imageUrl.toString();
+                    for (JButton b : btns){
+                       b.setEnabled(true);
+                    }
+                    button.setEnabled(false);
+                    this.skinChoisie = cosmetiqueID;
                 });
                 button.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+                System.out.println(this.skinChoisie + " vs " + cosmetiqueID);
+                if ( cosmetiqueID.equals(this.skinChoisie )){
+                    button.setEnabled(false);
+                }
                 cosmetiqueGrid.add(button);
+                btns.add(button);
             }
+
             profilPanel.add(cosmetiqueGrid,gbc);
+            profilPanel.add(btnLogout,gbc);
+
+            // Forcer le redessin du panel après la modification
+            profilPanel.revalidate();
+            profilPanel.repaint();
         }catch(Exception e){
             throw new RuntimeException(e);
         }

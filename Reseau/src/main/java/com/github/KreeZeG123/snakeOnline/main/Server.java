@@ -1,34 +1,34 @@
 package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
+import com.github.KreeZeG123.snakeOnline.model.agent.Snake;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
-import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
-import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.SnakeActionDTO;
-import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
+import com.github.KreeZeG123.snakeOnline.model.dto.StringMapDTO;
+import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.*;
 import com.github.KreeZeG123.snakeOnline.model.game.SnakeGame;
 import com.github.KreeZeG123.snakeOnline.utils.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.sleep;
 
 public class Server {
-    private int max_player;
-    private InputMap map;
+    private static final String WEB_SERVER_ADRESS = "http://localhost:8080/Web/";
+    private final int max_player;
+    private final InputMap map;
+    private final MainServer mainServer;
     private boolean serverIsOn;
-    private Vector<Socket> clientsSocket;
-    private Vector<Thread> threadsClients;
+    private final Vector<Socket> clientsSocket;
     private ServerSocket serveurSocket;
-    private AtomicInteger nbJoueurs = new AtomicInteger(0);
+    private final AtomicInteger nbJoueurs = new AtomicInteger(0);
     private SnakeGame snakeGame;
     private int port;
     private String ip;
-    private Client[] clients;
+    private final Map<String, String> players;
+
     public void code_gestion_client(Socket so) {
         try {
             while (this.serverIsOn) {
@@ -48,11 +48,21 @@ public class Server {
                     switch (receivedProtocol.getMessage()) {
                         case "SnakeGameClientJoin": {
                             if (nbJoueurs.get() < this.max_player) {
+
+                                StringMapDTO stringMapDTO = receivedProtocol.getData();
+                                String playerName = stringMapDTO.get("username");
+
+                                ColorSnake snakeColor = ColorSnake.values()[nbJoueurs.get()];
+
+                                // Ajout dans la liste des jouers
+                                this.players.put(snakeColor.toString(), playerName);
+
+
+                                // Envoi des informations de début de partie
                                 GameStartDTO gameStartDTO = new GameStartDTO(
                                         this.map,
-                                        ColorSnake.values()[nbJoueurs.get()]
+                                        snakeColor
                                 );
-                                // Envoi des informations de début de partie
                                 Protocol gameStartProtocol = new Protocol(
                                         "SnakeGame Server " + so.getLocalAddress(),
                                         "SnakeGame Client " + so.getInetAddress(),
@@ -94,7 +104,15 @@ public class Server {
 
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (SocketException se) {
+            if ( se.getMessage().startsWith("Socket is closed") ) {
+                System.out.println("Le client a coupé la connexion.");
+            } else {
+                throw new RuntimeException( se );
+            }
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -145,7 +163,7 @@ public class Server {
         while (this.serverIsOn) {
             try {
                 // S'il y a assez de joueurs
-                if (nbJoueurs.get() == this.max_player && !gameIsFinished) {
+                if (nbJoueurs.get() == this.max_player && !gameIsFinished && clientsSocket != null && !clientsSocket.isEmpty()) {
                     this.snakeGame.step();
                     if (this.snakeGame.gameContinue()) {
                         // Prévenir les clients de la mise à jour
@@ -160,16 +178,51 @@ public class Server {
                     }
                     else {
                         gameIsFinished = true;
-                        // Prévenir les clients de la fin de la partie
-                        GameUpdateDTO infoGameEndedDTO = this.snakeGame.getGameData();
-                        Protocol snakeGameEndProtocol = new Protocol(
-                                "Server",
-                                "Client",
-                                (new Date()).toString(),
-                                "SnakeGameServerEndGame",
-                                infoGameEndedDTO
-                        );
-                        notifier_clients(snakeGameEndProtocol, null);
+
+                        try {
+                            // Prévenir les clients de la fin de la partie
+                            GameUpdateDTO infoGameEndedDTO = this.snakeGame.getGameData();
+                            Protocol snakeGameEndProtocol = new Protocol(
+                                    "Server",
+                                    "Client",
+                                    (new Date()).toString(),
+                                    "SnakeGameServerEndGame",
+                                    infoGameEndedDTO
+                            );
+                            notifier_clients(snakeGameEndProtocol, null);
+
+                            // GameEndDTO
+                            List<String> orderedPlayers = new ArrayList<>();
+                            List<Integer> orderedScores = new ArrayList<>();
+                            for (Snake s : this.snakeGame.getSnakeAgents()) {
+                                orderedPlayers.add(this.players.get(s.getColorSnake().toString()));
+                                orderedScores.add(s.getPoints());
+                            }
+                            GameEndDTO gameEndDTO = new GameEndDTO(
+                                    orderedPlayers,
+                                    orderedScores
+                            );
+
+                            // Notifie le server web de la fin de partie
+                            Protocol gameEndProtocol = new Protocol(
+                                    "SnakeGameServer",
+                                    "WebServer",
+                                    (new Date()).toString(),
+                                    "SnakeGameServerEndGame",
+                                    gameEndDTO
+                            );
+
+                            Protocol endGameReponseprotocol = Protocol.sendHttpProtocolRequest(gameEndProtocol, WEB_SERVER_ADRESS + "api/gameEnd");
+                            if ( endGameReponseprotocol != null && endGameReponseprotocol.getMessage().equals("WebServerEndGameSucess"))  {
+                                System.out.println("Remonté des informations de partie finie avec succes");
+                            }else {
+                                System.out.println("Echec dans la remonté des informations de partie finie");
+                            }
+
+                            mainServer.removeServer(ip, port);
+                        } catch (Exception e) {
+                            System.out.println("Problème 2 : "+e);
+                        }
                     }
                 } else {
                     if (gameIsFinished) {
@@ -191,6 +244,8 @@ public class Server {
         this.map = map;
         this.max_player = map.getStart_snakes().size();
         this.serverIsOn = true;
+        this.players = new HashMap<>();
+        this.mainServer = mainServer;
         clientsSocket = new Vector<Socket>();
 
         // Lance le thread pour le jeu (temporaire)
@@ -204,7 +259,7 @@ public class Server {
             this.ip = getEthernetAddress();
             System.out.println("IP du serveur : " + this.ip);
             System.out.println("Port du serveur : " + this.port);
-            mainServer.setServerInitialization(this.ip, this.port);
+            this.mainServer.setServerInitialization(this.ip, this.port);
             System.out.println("Serveur mis en place");
 
             // Boucle pour accepter les nouvelles connexions (arrêt avec stop et stopAll)

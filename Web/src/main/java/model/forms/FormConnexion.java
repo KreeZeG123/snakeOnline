@@ -25,7 +25,11 @@ public class FormConnexion extends FormBase {
 	public Joueur connecterJoueur( HttpServletRequest request ) {
 		String username = getValeurChamp( request, CHAMP_USERNAME );
 	    String motDePasse = getValeurChamp( request, CHAMP_MOT_DE_PASSE );
-
+	    
+	    return connecterJoueur(username, motDePasse);
+	}
+	
+	public Joueur connecterJoueur( String username, String motDePasse ) {
 	    Joueur joueur = new Joueur();
 	    try {
 	    	joueur = traiterUsername( username );

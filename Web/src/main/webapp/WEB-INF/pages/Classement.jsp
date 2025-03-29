@@ -32,7 +32,7 @@
                 <c:forEach var="classement" varStatus="varStatus" items="${classements}">
                     <tr>
                         <td>${varStatus.index + 1}</td>
-                        <td>${classement.joueur}</td>
+                        <td>${classement.username}</td>
                         <td>${classement.score}</td>
                     </tr>
                 </c:forEach>

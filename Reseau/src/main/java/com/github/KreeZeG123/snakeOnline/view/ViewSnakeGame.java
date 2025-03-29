@@ -13,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
@@ -24,8 +25,7 @@ public class ViewSnakeGame extends AbstractView {
     private final JLabel snakeInfoLabel;  // Label pour afficher les informations des serpents
 
 
-
-    public ViewSnakeGame(AbstractController controller, PanelSnakeGame panel) {
+    public ViewSnakeGame(ControllerSnakeGame controller, PanelSnakeGame panel) {
         super(null, controller);
 
         this.panelSnakeGame = panel;
@@ -43,6 +43,13 @@ public class ViewSnakeGame extends AbstractView {
 
         // Ajouter la barre d'informations au dessus de panelSnakeGame
         this.jFrame.add(infoBar, BorderLayout.NORTH);
+
+        final ControllerSnakeGame controllerSnakeGame = (ControllerSnakeGame) this.controller;
+        this.jFrame.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                controllerSnakeGame.leaveGame();
+            }
+        });
     }
 
     // Configuration des KeyListeners pour détecter les touches
@@ -70,13 +77,6 @@ public class ViewSnakeGame extends AbstractView {
 
     // Gestion des touches pressées
     private void handleKeyPress(KeyEvent e) {
-        // Gestion de la mise en pause et du unpause
-        if ( e.getKeyCode() == KeyEvent.VK_ESCAPE ) {
-            if (this.controller instanceof ControllerSnakeGame) {
-                ((ControllerSnakeGame) this.controller).pauseUnpauseFromUser();
-            }
-        }
-
         String key = "";
 
         // Gestion des touches ZQSD (joueur 1)

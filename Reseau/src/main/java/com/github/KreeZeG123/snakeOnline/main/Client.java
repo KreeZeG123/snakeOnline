@@ -3,6 +3,7 @@ package com.github.KreeZeG123.snakeOnline.main;
 import com.github.KreeZeG123.snakeOnline.controller.ControllerSnakeGame;
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.StringMapDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.SnakeActionDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameStartDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.snakeGame.GameUpdateDTO;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -33,11 +35,11 @@ public class Client {
             while (so!=null && !so.isClosed()) {
                 String receivedMessage = entreeDuClient.readLine();
                 Protocol receivedProtocol = Protocol.deserialize(receivedMessage);
-                System.out.println("client a reçu : |" + receivedProtocol.getMessage() + "|");
                 if (receivedMessage == null) {
                     System.out.println("Le serveur a coupé la connexion.");
                     break;
                 } else {
+                    System.out.println("client a reçu : |" + receivedProtocol.getMessage() + "|");
                     switch (receivedProtocol.getMessage()) {
                         case "SnakeGameServerEndGame" : {
                             this.controller.update(new ArrayList<>(), null, null);
@@ -62,7 +64,15 @@ public class Client {
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (SocketException se) {
+            if ( se.getMessage().startsWith("Socket is closed") ) {
+                System.out.println("Le serveur a coupé la connexion.");
+            } else {
+                throw new RuntimeException( se );
+            }
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -86,7 +96,25 @@ public class Client {
         }
     }
 
-    public Client(String ip, int port) {
+    public void leaveGame() {
+        try {
+            PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
+
+            Protocol clientLeaveProtocol = new Protocol(
+                    "SnakeGame Client " + so.getLocalAddress(),
+                    "SnakeGame Server " + so.getInetAddress(),
+                    (new Date()).toString(),
+                    "SnakeGameClientLeave",
+                    null
+            );
+
+            sortie.println(clientLeaveProtocol.serialize());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public Client(String ip, int port, String username, String skinChoisie) {
         try{
             // On se connecte au serveur
             so = new Socket(ip, port);
@@ -94,12 +122,13 @@ public class Client {
             BufferedReader entreeDuClient = new BufferedReader(new InputStreamReader(so.getInputStream()));
 
             // On envoie un message de connexion
+            StringMapDTO stringMapDTO = new StringMapDTO("username", username);
             Protocol joinGameProtocol = new Protocol(
                     "SnakeGame Client " + so.getLocalAddress(),
                     "SnakeGame Server " + so.getInetAddress(),
                     (new Date()).toString(),
                     "SnakeGameClientJoin",
-                    null
+                    stringMapDTO
             );
             sortieVersServeur.println(joinGameProtocol.serialize());
 
@@ -115,15 +144,11 @@ public class Client {
             this.clientColor = startGameDTO.clientColor;
 
             // Création de l'affichage
-
-            this.controller = new ControllerSnakeGame(inputMap, this);
+            this.controller = new ControllerSnakeGame(inputMap, this, skinChoisie);
 
             // On crée un thread pour écouter les messages du serveur quand la partie est en cours
             Thread threadEcoute = new Thread(this::gestion_reception_in_game);
             threadEcoute.start();
-
-
-            //so.close(); // on ferme la connexion
         }
         catch (Exception e) {
             System.out.println(e);
@@ -131,6 +156,6 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        new Client("0.0.0.0",4321);
+        new Client("0.0.0.0",4321, "test", null);
     }
 }

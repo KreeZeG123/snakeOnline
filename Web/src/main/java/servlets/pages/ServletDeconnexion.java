@@ -1,4 +1,4 @@
-package servlets;
+package servlets.pages;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -6,21 +6,25 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
- * Servlet implementation class ServletAccueil
+ * Servlet implementation class ServletDeconnexion
  */
-@WebServlet("/accueil")
-public class ServletAccueil extends HttpServlet {
+@WebServlet("/deconnexion")
+public class ServletDeconnexion extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	
 	private static final String ACCUEIL_JSP = "/WEB-INF/pages/Accueil.jsp";
+	
+	private static final String ATT_JOUEUR_ID_SESSION = "joueurID";
+	private static final String ATT_JOUEUR_USERNAME_SESSION = "joueurUsername";
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public ServletAccueil() {
+    public ServletDeconnexion() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -29,15 +33,14 @@ public class ServletAccueil extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		this.getServletContext().getRequestDispatcher(ACCUEIL_JSP).forward(request,response);
+		
+		/* Enlève l'id du joueur en séssion */
+        HttpSession session = request.getSession();
+        session.removeAttribute(ATT_JOUEUR_ID_SESSION);
+        session.removeAttribute(ATT_JOUEUR_USERNAME_SESSION);
+		
+		this.getServletContext().getRequestDispatcher(ACCUEIL_JSP).forward(request, response);
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
 
 }

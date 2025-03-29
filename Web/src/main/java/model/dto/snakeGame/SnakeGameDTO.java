@@ -1,6 +1,6 @@
-package com.github.KreeZeG123.snakeOnline.model.dto.snakeGame;
+package model.dto.snakeGame;
 
-import com.github.KreeZeG123.snakeOnline.model.dto.DTOInterface;
+import model.dto.DTOInterface;
 
 public abstract class SnakeGameDTO implements DTOInterface {
 
