@@ -2,24 +2,22 @@ package com.github.KreeZeG123.snakeOnline.main;
 
 import com.github.KreeZeG123.snakeOnline.model.InputMap;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
+import com.github.KreeZeG123.snakeOnline.model.dto.StringMapDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.mainMenu.*;
 import com.google.gson.Gson;
 
 
 import javax.management.StringValueExp;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.Array;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MainServer {
+
+    private static final String WEB_SERVER_ADRESS = "http://localhost:8080/Web/";
+
     final List<String[]> serverList = new CopyOnWriteArrayList<>();
     private int port;
     private String ip;
@@ -77,13 +75,21 @@ public class MainServer {
                 switch(receivedProtocol.getMessage()){
                     case "MainMenuClientDemandeConnexion":
                         System.out.println("Demande de connexion");
-                        LoginDTO loginDTO = receivedProtocol.getData();
-                        System.out.println("njnn" + loginDTO.getLogin());
-                        ///Verification dans la base données + retour d'informations sur l'utilisateur
-                        String[] cosmetiques = {"Chapeau","Lunettes"};
-                        InfoUserDTO infoUserDTOLogin = new InfoUserDTO(loginDTO.getLogin(), cosmetiques, 10);
-                        Protocol sendingProtocolConnexion =  new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "ConnexionAcceptée", infoUserDTOLogin);
-                        sortie.println(sendingProtocolConnexion.serialize());
+
+                        // Remplace les infos du client par celle du serveur
+                        receivedProtocol.setSender("MainServer");
+                        receivedProtocol.setReceiver("WebServer");
+                        receivedProtocol.setMessage( receivedProtocol.getMessage().replace("MainMenu", "MainServer"));
+
+                        // Communique les informations au serveur web
+                        Protocol userInfoLoginProtocol = Protocol.sendHttpProtocolRequest(receivedProtocol,  WEB_SERVER_ADRESS + "api/connexion");
+
+                        // Remplace les infos du serveur web par celles du main server
+                        userInfoLoginProtocol.setSender("MainServer");
+                        userInfoLoginProtocol.setReceiver("MainMenuClient");
+                        userInfoLoginProtocol.setMessage( userInfoLoginProtocol.getMessage().replace("WebServer", "MainServer") );
+
+                        sortie.println(userInfoLoginProtocol.serialize());
                         break;
                     case "MainMenuClientDemandeServerList" :
                         System.out.println("Demande de liste de serveurs");
@@ -101,25 +107,43 @@ public class MainServer {
                         Protocol sendingProtocolCreationServeur = new Protocol("MainServer","MainMenuClicent", (new Date()).toString(), "RetourDemandeCreationServeur",infoServerDTO);
                         sortie.println(sendingProtocolCreationServeur.serialize());
                         break;
-                    case "MainMenuClientDemandeEnregistrement" :
-                        System.out.println("Demande d'enregistrement");
-                        RegisterDTO registerDTO = receivedProtocol.getData();
-                        ///Verification du login si il est deja utilisé
-                        InfoUserDTO infoUserDTORegister = new InfoUserDTO(registerDTO.getLogin(),new String[0], 0);
-                        //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
-                        Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementAccepté", infoUserDTORegister);
-                        sortie.println(sendingProtocolRegister.serialize());
+                    case "MainMenuClientInscription" :
+                        System.out.println("Demande d'inscription");
+                        System.out.println(message);
+
+                        // Remplace les infos du client par celle du serveur
+                        receivedProtocol.setSender("MainServer");
+                        receivedProtocol.setReceiver("WebServer");
+                        receivedProtocol.setMessage( receivedProtocol.getMessage().replace("MainMenuClient", "MainServer"));
+
+                        // Communique les informations au serveur web
+                        Protocol userInfoInscriptionProtocol = Protocol.sendHttpProtocolRequest(receivedProtocol,  WEB_SERVER_ADRESS + "api/inscription");
+
+                        // Remplace les infos du serveur web par celles du main server
+                        userInfoInscriptionProtocol.setSender("MainServer");
+                        userInfoInscriptionProtocol.setReceiver("MainMenuClient");
+                        userInfoInscriptionProtocol.setMessage( userInfoInscriptionProtocol.getMessage().replace("WebServer", "MainServer") );
+
+                        sortie.println(userInfoInscriptionProtocol.serialize());
                         break;
                     case "MainMenuClientDemandeInfoUser" :
                         System.out.println("Demande informations user");
-                        LoginDTO loginDTODemandeInfo = receivedProtocol.getData();
-                        ///Verification du login si il est deja utilisé
-                        InfoUserDTO infoUserDTODemandeInfo = new InfoUserDTO(loginDTODemandeInfo.getLogin(), new String[]{"snake_dragon.png","snake_camouflage.png","snake_neon.png"}, 0);
-                        System.out.println("huhuihhhuh" + loginDTODemandeInfo.getLogin());
-                        System.out.println("Cosmtiques : " + Arrays.toString(infoUserDTODemandeInfo.getCosmetiques()));
-                        //Protocol sendingProtocolRegister = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "EnregistrementRefusé", null);
-                        Protocol sendingProtocolDemandeInfoUser = new Protocol("MainServer", "MainMenuClient", (new Date()).toString(), "RetourDemandeInfoUser", infoUserDTODemandeInfo);
-                        sortie.println(sendingProtocolDemandeInfoUser.serialize());
+                        StringMapDTO stringMapDTO = receivedProtocol.getData();
+
+                        // Remplace les infos du client par celle du serveur
+                        receivedProtocol.setSender("MainServer");
+                        receivedProtocol.setReceiver("WebServer");
+                        receivedProtocol.setMessage( receivedProtocol.getMessage().replace("MainMenu", "MainServer"));
+
+                        // Communique les informations au serveur web
+                        Protocol userInfoDemandeProtocol = Protocol.sendHttpProtocolRequest(receivedProtocol, WEB_SERVER_ADRESS + "api/infoProfil");
+
+                        // Remplace les infos du serveur web par celles du main server
+                        userInfoDemandeProtocol.setSender("MainServer");
+                        userInfoDemandeProtocol.setReceiver("MainMenuClient");
+                        userInfoDemandeProtocol.setMessage( userInfoDemandeProtocol.getMessage().replace("WebServer", "MainServer") );
+
+                        sortie.println(userInfoDemandeProtocol.serialize());
                         break;
                     default :
                         break;
@@ -152,6 +176,26 @@ public class MainServer {
         result = newServerInfo; // Mettre à jour la variable partieResult
         return result; // Retourner les infos du nouveau serveur
     }
+
+    public void removeServer(String ip, int port) {
+        synchronized (this.serverList) {
+            Iterator<String[]> iterator = this.serverList.iterator();
+            while (iterator.hasNext()) {
+                String[] server = iterator.next();
+                if (server[1].equals(ip) && Integer.parseInt(server[2]) == port) {
+                    iterator.remove();  // Retirer l'élément de la liste
+                    System.out.println("Serveur supprimé : " + ip + ":" + port);
+                    break;
+                }
+            }
+
+            // Optionnel : Affichage de la liste des serveurs après suppression
+            for (int i = 0; i < serverList.size(); i++) {
+                System.out.println("Serveur " + i + " : " + serverList.get(i)[1] + ":" + serverList.get(i)[2]);
+            }
+        }
+    }
+
 
     private synchronized void waitForServerInitialization() {
         while (this.portServer == 0 || this.ipServer == null) {

@@ -1,7 +1,7 @@
-package servlets;
+package servlets.pages;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,7 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import model.beans.Classement;
+import model.beans.Joueur;
+import model.dao.factory.DAOFactory;
+import model.dao.interfaces.JoueurDao;
 
 /**
  * Servlet implementation class ServletClassement
@@ -22,39 +24,25 @@ public class ServletClassement extends HttpServlet {
 	private static final String CLASSEMENTS_ATTR = "classements";
 	
 	private static final String CLASSEMENT_JSP = "/WEB-INF/pages/Classement.jsp";
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public ServletClassement() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+	
+	private static final int CLASSEMENT_MAX_NUMBER_OF_PLAYERS_DISPLAYED = 15;
+
+	private JoueurDao joueurDAO;
+    
+    public void init() throws ServletException{
+    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	this.joueurDAO = daoFactory.getJoueurDao();
+	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		ArrayList<Classement> classements = new ArrayList<>();
-		
-		Classement classement1 = new Classement();
-		classement1.setJoueur("Joueur 1");
-		classement1.setScore(500);
-		classements.add(classement1);
-
-		Classement classement2 = new Classement();
-		classement2.setJoueur("Joueur 2");
-		classement2.setScore(400);
-		classements.add(classement2);
-		
-		Classement classement3 = new Classement();
-		classement3.setJoueur("Joueur 3");
-		classement3.setScore(300);
-		classements.add(classement3);
+		List<Joueur> classementJoueurs = this.joueurDAO.classementJoueurs(CLASSEMENT_MAX_NUMBER_OF_PLAYERS_DISPLAYED);
         
         // Ajouter la liste des classements à la requête
-        request.setAttribute(CLASSEMENTS_ATTR, classements);
+        request.setAttribute(CLASSEMENTS_ATTR, classementJoueurs);
 		
 		this.getServletContext().getRequestDispatcher(CLASSEMENT_JSP).forward(request,response);
 	}

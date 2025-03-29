@@ -1,5 +1,4 @@
-package com.github.KreeZeG123.snakeOnline.model.dto.mainMenu;
-
+package model.dto.mainMenu;
 
 public class InfoUserDTO extends MainMenuDTO{
     private int userID;

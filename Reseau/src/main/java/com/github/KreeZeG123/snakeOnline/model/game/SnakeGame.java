@@ -125,13 +125,13 @@ public class SnakeGame extends Game {
     public void checkInteraction() {
         checkCollisionWall();
         checkCollisionSnake();
-        removeDeadSnakes();
+        //removeDeadSnakes();
         checkItems();
     }
 
     public void checkCollisionWall() {
         for (Snake snake : snakeAgents) {
-            if ( snake.getInvincibleTime() <= 0 ) {
+            if ( !snake.isDead() && snake.getInvincibleTime() <= 0 ) {
                 Position snakeHeadPos = snake.getPositions().get(0);
                 if (this.map.get_walls()[snakeHeadPos.getX()][snakeHeadPos.getY()]) {
                     snake.setDead(true);
@@ -144,9 +144,11 @@ public class SnakeGame extends Game {
         // Récupère toutes les positions des corps des snakes (sans la tête)
         Map<Position, Snake> positionsBodySnakes = new HashMap<>();
         for (Snake snake : snakeAgents) {
-            List<Position> body = snake.getPositions().subList(1, snake.getPositions().size());
-            for (Position pos : body) {
-                positionsBodySnakes.put(pos, snake);
+            if ( !snake.isDead() ) {
+                List<Position> body = snake.getPositions().subList(1, snake.getPositions().size());
+                for (Position pos : body) {
+                    positionsBodySnakes.put(pos, snake);
+                }
             }
         }
 
@@ -155,41 +157,43 @@ public class SnakeGame extends Game {
 
         // Vérifie chaque snake
         for (Snake snake : snakeAgents) {
-            // Ignore les snakes invincibles
-            if (snake.getInvincibleTime() > 0) {
-                continue;
-            }
-
-            Position snakeHeadPos = snake.getPositions().get(0);
-
-            // Collision avec son propre corps
-            if (positionsBodySnakes.containsKey(snakeHeadPos) && positionsBodySnakes.get(snakeHeadPos) == snake) {
-                snake.setDead(true);
-                continue;
-            }
-
-            // Collision avec un autre snake (tête ou corps)
-            for (Snake otherSnake : snakeAgents) {
-                if (snake == otherSnake) {
+            if ( !snake.isDead() ) {
+                // Ignore les snakes invincibles
+                if (snake.getInvincibleTime() > 0) {
                     continue;
                 }
 
-                Position otherSnakeHeadPos = otherSnake.getPositions().get(0);
+                Position snakeHeadPos = snake.getPositions().get(0);
 
-                // Collision de la tête du snake avec la tête d'un autre snake
-                if (snakeHeadPos.equals(otherSnakeHeadPos)) {
-                    if (snake.getPositions().size() >= otherSnake.getPositions().size()) {
-                        otherSnake.setDead(true);
-                    } else {
-                        snake.setDead(true);
-                    }
+                // Collision avec son propre corps
+                if (positionsBodySnakes.containsKey(snakeHeadPos) && positionsBodySnakes.get(snakeHeadPos) == snake) {
+                    snake.setDead(true);
+                    continue;
                 }
-                // Collision avec le corps d'un autre snake
-                else if (otherSnake.getPositions().subList(1, otherSnake.getPositions().size()).contains(snakeHeadPos)) {
-                    if (snake.getPositions().size() > otherSnake.getPositions().size()) {
-                        otherSnake.setDead(true);
-                    } else {
-                        snake.setDead(true);
+
+                // Collision avec un autre snake (tête ou corps)
+                for (Snake otherSnake : snakeAgents) {
+                    if (snake == otherSnake) {
+                        continue;
+                    }
+
+                    Position otherSnakeHeadPos = otherSnake.getPositions().get(0);
+
+                    // Collision de la tête du snake avec la tête d'un autre snake
+                    if (snakeHeadPos.equals(otherSnakeHeadPos)) {
+                        if (snake.getPositions().size() >= otherSnake.getPositions().size()) {
+                            otherSnake.setDead(true);
+                        } else {
+                            snake.setDead(true);
+                        }
+                    }
+                    // Collision avec le corps d'un autre snake
+                    else if (otherSnake.getPositions().subList(1, otherSnake.getPositions().size()).contains(snakeHeadPos)) {
+                        if (snake.getPositions().size() > otherSnake.getPositions().size()) {
+                            otherSnake.setDead(true);
+                        } else {
+                            snake.setDead(true);
+                        }
                     }
                 }
             }
@@ -200,7 +204,7 @@ public class SnakeGame extends Game {
     public void checkItems() {
         int nbAppleEaten = 0;
         for (Snake snake : snakeAgents) {
-            if ( snake.getSickTime() <= 0) {
+            if ( !snake.isDead() && snake.getSickTime() <= 0) {
                 Position snakeHeadPos = snake.getPositions().get(0);
                 for (Item item : items) {
                     if (item.getPosition().equals(snakeHeadPos) && !item.isUsed()) {
@@ -226,7 +230,7 @@ public class SnakeGame extends Game {
 
     @Override
     public boolean gameContinue() {
-        return !this.snakeAgents.isEmpty();
+        return !this.snakeAgents.stream().allMatch(Snake::isDead) && this.turn < this.maxturn;
     }
 
     @Override
@@ -300,7 +304,9 @@ public class SnakeGame extends Game {
             }
         }
         for (Snake snake : snakeAgents) {
-            emptyPositions.removeAll(snake.getPositions());
+            if ( !snake.isDead() ) {
+                emptyPositions.removeAll(snake.getPositions());
+            }
         }
         for (Item item : items) {
             emptyPositions.remove(item.getPosition());
@@ -339,7 +345,9 @@ public class SnakeGame extends Game {
         // Positions des snakes et leurs corps
         Set<Position> positionsSerpent = new HashSet<>();
         for (Snake snake : snakeAgents) {
-            positionsSerpent.addAll(snake.getPositions());
+            if ( !snake.isDead() ) {
+                positionsSerpent.addAll(snake.getPositions());
+            }
         }
 
         // Informations de la map
@@ -388,7 +396,9 @@ public class SnakeGame extends Game {
     public Set<Position> getSnakesPositions() {
         Set<Position> snakesPositions = new HashSet<>();
         for ( Snake snake : snakeAgents ) {
-            snakesPositions.addAll(snake.getPositions());
+            if ( !snake.isDead() ) {
+                snakesPositions.addAll(snake.getPositions());
+            }
         }
         return snakesPositions;
     }
@@ -437,15 +447,17 @@ public class SnakeGame extends Game {
         // Créer les nouveaux featuresSnakes
         ArrayList<FeaturesSnake> featuresSnakes = new ArrayList<>();
         for (Snake snake : this.getSnakeAgents()) {
-            featuresSnakes.add(
-                    new FeaturesSnake(
-                            snake.getPositions(),
-                            snake.getLastAction(),
-                            snake.getColorSnake(),
-                            snake.getInvincibleTime() > 0,
-                            snake.getSickTime() > 0
-                    )
-            );
+            if ( !snake.isDead() ) {
+                featuresSnakes.add(
+                        new FeaturesSnake(
+                                snake.getPositions(),
+                                snake.getLastAction(),
+                                snake.getColorSnake(),
+                                snake.getInvincibleTime() > 0,
+                                snake.getSickTime() > 0
+                        )
+                );
+            }
         }
 
         // Créer les nouveaux featuresItems
@@ -519,10 +531,12 @@ public class SnakeGame extends Game {
 
     private boolean isSerpentPresentDansSnakeAgents(String snakeColor, List<Snake> snakeAgents) {
         for (Snake snake : snakeAgents) {
-            if (snake.getColorSnake().toString().equals(snakeColor)) {
-                return true;  // Le serpent est encore présent
+            if ( !snake.isDead() ) {
+                if (snake.getColorSnake().toString().equals(snakeColor)) {
+                    return true;  // Le serpent est encore présent
+                }
             }
         }
-        return false;  // Le serpent n'est plus dans snakeAgents
+        return false;  // Le serpent n'est plus vivant dans snakeAgents
     }
 }

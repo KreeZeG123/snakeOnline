@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,14 +47,21 @@
 		                        	<h5 class="card-title">${item.title}</h5>
 		                        	<p class="card-text">${item.description}</p>
 		                        </div>
-		                        <c:if test="${not empty sessionScope.joueurID }">
-		                        	<form action="acheterItem" method="POST">
-			                            <input type="hidden" name="itemId" value="${item.id}">
-			                            <button type="submit" class="btn btn-info">
-			                                Acheter - ${item.price} Pièces
-			                            </button>
-			                        </form>
-		                        </c:if>
+		                        <c:if test="${not empty sessionScope.joueurID}">
+								    <form action="api/acheterItem" method="POST">
+								        <input type="hidden" name="itemId" value="${item.id}">
+								        <c:choose>
+								            <c:when test="${fn:contains(unlockedItems, item.id)}">
+								                <button type="button" class="btn btn-secondary" disabled>Déjà débloqué</button>
+								            </c:when>
+								            <c:otherwise>
+								                <button type="submit" class="btn btn-info">
+								                    Acheter - ${item.price} Pièces
+								                </button>
+								            </c:otherwise>
+								        </c:choose>
+								    </form>
+								</c:if>
 		                        <c:if test="${empty sessionScope.joueurID }">
 		                        	<button type="button" class="btn btn-info" onclick="showLoginPopup()">Acheter - ${item.price} Pièces</button>
 		                        </c:if>

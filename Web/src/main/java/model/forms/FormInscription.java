@@ -23,12 +23,17 @@ public class FormInscription extends FormBase {
 	    this.joueurDao = joueurDao;
 	}
 	
+	
 	public Joueur inscrireUtilisateur( HttpServletRequest request ) {
 		String username = getValeurChamp( request, CHAMP_USERNAME );
 		String email = getValeurChamp( request, CHAMP_EMAIL );
 	    String motDePasse = getValeurChamp( request, CHAMP_MOT_DE_PASSE );
 	    String motDePasseConfirmation = getValeurChamp( request, CHAMP_CONFIRM_MOT_DE_PASSE );
-
+	    
+	    return inscrireUtilisateur(username, email, motDePasse, motDePasseConfirmation);
+	}
+	
+	public Joueur inscrireUtilisateur(String username, String email, String motDePasse, String motDePasseConfirmation) {
 	    Joueur joueur = new Joueur();
 	    try {
 	    	traiterUsername( username, joueur );

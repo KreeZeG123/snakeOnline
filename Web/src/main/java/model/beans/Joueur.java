@@ -18,6 +18,10 @@ public class Joueur {
 		this.score = score;
 	}
 	
+	public void addScore( int scoreToAdd ) {
+		this.score += scoreToAdd;
+	}
+	
 	public String getSkins() {
 		return skins;
 	}
@@ -60,5 +64,8 @@ public class Joueur {
 		this.nbPieces = nbPieces;
 	}
 	
+	public void addPieces(int nbPieces ) {
+		this.nbPieces += nbPieces;
+	}
 	
 }

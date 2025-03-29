@@ -3,7 +3,10 @@ package model.dao.implementations;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import model.beans.Joueur;
 import model.dao.interfaces.JoueurDao;
@@ -16,11 +19,12 @@ public class JoueurDaoImpl implements JoueurDao {
 	private DAOFactory daoFactory;
 	
 	private static final String SQL_SELECT_PAR_ID = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE id = ?";
-	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE username = ?";
-	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE email = ?";
+	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE BINARY username = ?";
+	private static final String SQL_SELECT_PAR_EMAIL = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE BINARY email = ?";
 	private static final String SQL_UPDATE_JOUEUR = "UPDATE joueurs SET username = ?, mot_de_passe = ?, email = ?, nb_pieces = ?, skins = ?, score = ? WHERE id = ?";
-	
 	private static final String SQL_INSERT = "INSERT INTO joueurs (username, email, mot_de_passe, nb_pieces, skins, score, date_inscription) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+	private static final String SQL_SELECT_CLASSEMENT_PAR_SCORE = "SELECT username, score FROM joueurs ORDER BY score DESC LIMIT ?";
+	private static final String SQL_SELECT_JOUEURS_BY_USERNAMES = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE BINARY username IN (?)";
 	
     public JoueurDaoImpl( DAOFactory daoFactory ) {
         this.daoFactory = daoFactory;
@@ -172,23 +176,109 @@ public class JoueurDaoImpl implements JoueurDao {
 	    }
 	}
 	
+	public List<Joueur> classementJoueurs( int limit ) {
+		Connection connexion = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		List<Joueur> joueurs = new ArrayList<Joueur>();
+
+		try {
+			/* Récupération d'une connexion depuis la Factory */
+			connexion = daoFactory.getConnection();
+			preparedStatement = DAOUtilitaire.initialisationRequetePreparee( connexion, SQL_SELECT_CLASSEMENT_PAR_SCORE, false, limit );
+			resultSet = preparedStatement.executeQuery();
+			/* Parcours des lignes de données de l'éventuel ResulSet retourné */
+			while ( resultSet.next() ) {
+    			joueurs.add(map(resultSet));
+    		}
+		} catch ( SQLException e ) {
+			throw new DAOException( e );
+		} finally {
+			DAOUtilitaire.fermeturesSilencieuses( resultSet, preparedStatement, connexion );
+		}
+
+		return joueurs;
+	}
+	
+	public List<Joueur> trouverParUsernames( List<String> usernames ) {
+		Connection connexion = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		
+		ArrayList<Joueur> joueurs = new ArrayList<>();
+		if (usernames == null | usernames.isEmpty() ) {
+			return joueurs;
+		}
+		
+    	try{
+    		connexion = daoFactory.getConnection();
+    		
+    		StringBuilder inString = new StringBuilder();
+    		inString.append("?,".repeat(usernames.size()));
+    		inString.setLength(inString.length() - 1);
+    		
+    		String query = SQL_SELECT_JOUEURS_BY_USERNAMES.replace("?", inString);
+    		
+    		preparedStatement = connexion.prepareStatement(query);
+            for (int i = 0; i < usernames.size(); i++) {
+                preparedStatement.setString(i + 1, usernames.get(i).trim());
+            }
+    		resultSet = preparedStatement.executeQuery();
+    		
+    		/* Parcours de la ligne de données de l'éventuel ResulSet retourné */
+    		while ( resultSet.next() ) {
+    			joueurs.add(map(resultSet));
+    		}
+    	} catch ( SQLException e ) {
+			throw new DAOException( e );
+		} finally {
+			DAOUtilitaire.fermeturesSilencieuses( resultSet, preparedStatement, connexion );
+		}
+    	return joueurs;
+	}
 
 	/*
 	 * Simple méthode utilitaire permettant de faire la correspondance (le
 	 * mapping) entre une ligne issue de la table des Joueurs (un
 	 * ResultSet) et un bean Joueur.
 	 */
-	private static Joueur map( ResultSet resultSet ) throws SQLException {
-		Joueur joueur = new Joueur();
-		joueur.setId( resultSet.getLong( "id" ) );
-		joueur.setUsername( resultSet.getString( "username" ) );
-		joueur.setEmail( resultSet.getString( "email") );
-		joueur.setMotDePasse( resultSet.getString( "mot_de_passe" ) );
-		joueur.setNbPieces( resultSet.getInt( "nb_pieces" ) );
-		joueur.setSkins( resultSet.getString( "skins" ) );
-		joueur.setScore( resultSet.getInt( "score" ) );
-		return joueur;
+	private static Joueur map(ResultSet resultSet) throws SQLException {
+	    Joueur joueur = new Joueur();
+	    ResultSetMetaData metaData = resultSet.getMetaData();
+	    int columnCount = metaData.getColumnCount();
+	    
+	    for (int i = 1; i <= columnCount; i++) {
+	        String columnName = metaData.getColumnName(i);
+	        
+	        switch (columnName) {
+	            case "id":
+	                joueur.setId(resultSet.getLong("id"));
+	                break;
+	            case "username":
+	                joueur.setUsername(resultSet.getString("username"));
+	                break;
+	            case "email":
+	                joueur.setEmail(resultSet.getString("email"));
+	                break;
+	            case "mot_de_passe":
+	                joueur.setMotDePasse(resultSet.getString("mot_de_passe"));
+	                break;
+	            case "nb_pieces":
+	                joueur.setNbPieces(resultSet.getInt("nb_pieces"));
+	                break;
+	            case "skins":
+	                joueur.setSkins(resultSet.getString("skins"));
+	                break;
+	            case "score":
+	                joueur.setScore(resultSet.getInt("score"));
+	                break;
+	            default:
+	                // Ignorer les colonnes non reconnues
+	                break;
+	        }
+	    }
+	    
+	    return joueur;
 	}
-
-
+	
 }

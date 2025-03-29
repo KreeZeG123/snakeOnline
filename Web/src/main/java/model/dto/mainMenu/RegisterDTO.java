@@ -1,4 +1,4 @@
-package com.github.KreeZeG123.snakeOnline.model.dto.mainMenu;
+package model.dto.mainMenu;
 
 //Login et password
 
@@ -18,10 +18,10 @@ public class RegisterDTO extends MainMenuDTO{
     public String getLogin() {
         return login;
     }
-
+    
     public String getEmail() {
-        return email;
-    }
+		return email;
+	}
 
     public String getPassword() {
         return password;
