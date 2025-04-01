@@ -34,6 +34,8 @@ public class MainMenu {
     private String cosmetiques;
     private String userName;
     private String skinChoisie = null;
+    private DefaultListModel<String> serverListDisplay = new DefaultListModel<>();
+    private ArrayList<String[]> serverListInfo = new ArrayList<>();
 
     public MainMenu() throws Exception {
         JFrame frame = new JFrame("Menu principal");
@@ -446,8 +448,8 @@ public class MainMenu {
 
         JLabel titleLabel3 = new JLabel("Liste des serveurs");
         titleLabel3.setFont(titleFont);
-        DefaultListModel<String> serverListDisplay = new DefaultListModel<>();
-        ArrayList<String[]> serverListInfo = new ArrayList<>();
+        serverListDisplay = new DefaultListModel<>();
+        serverListInfo = new ArrayList<>();
         demandeServerList(serverListInfo,serverListDisplay);
 
 
@@ -457,6 +459,12 @@ public class MainMenu {
 
         JScrollPane serversScrollPane = new JScrollPane(serversList);
         serversScrollPane.setPreferredSize(new Dimension(TAILLE_INPUT_X,500));
+
+        JButton refreshServerListButton = new JButton("Rafraichir");
+        refreshServerListButton.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
+        refreshServerListButton.addActionListener(actionEvent -> {
+            demandeServerList(serverListInfo,serverListDisplay);
+        });
 
         JButton connexionServerButton = new JButton("Connexion");
         connexionServerButton.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
@@ -488,6 +496,7 @@ public class MainMenu {
         partyPanel.add(profilButton);
         partyPanel.add(titleLabel3, gbc);
         partyPanel.add(serversScrollPane, gbc);
+        partyPanel.add(refreshServerListButton, gbc);
         partyPanel.add(connexionServerButton, gbc);
         partyPanel.add(createNewServerButton, gbc);
     }
@@ -521,6 +530,7 @@ public class MainMenu {
         }
 
         backButton.addActionListener(actionEvent -> {
+            demandeServerList(this.serverListInfo, this.serverListDisplay);
             cardLayout.show(cardPanel,"partyPanel");
         });
         JLabel choixMapLabel = new JLabel("Veuillez choisir une map :");
@@ -540,6 +550,7 @@ public class MainMenu {
             ServerListDTO serverListDTO = receivedProtocol.getData();
             serverListInfo.clear();
             serverListInfo.addAll(serverListDTO.getServerList());
+            serverListDisplay.clear();
             for(int i = 0; i < serverListInfo.size(); i++){
                 serverListDisplay.add(i,serverListInfo.get(i)[0] + " IP : " + serverListInfo.get(i)[1] + " Port : " + serverListInfo.get(i)[2]);
             }
