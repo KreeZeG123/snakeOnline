@@ -139,21 +139,26 @@ public class Server {
     }
 
     public void notifier_clients(Protocol protocol, Socket emetteur) {
-        for (Socket so : clientsSocket) {
-            if (so != emetteur) {
-                new Thread(() -> {
-                    try {
-                        PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
-                        protocol.setSender("SnakeGame Server " + so.getLocalAddress());
-                        protocol.setReceiver("SnakeGame Client " + so.getInetAddress());
-                        sortie.println(protocol.serialize());
-                    } catch (IOException e) {
-                        System.out.println("problème\n"+e);
-                    }
-                }).start();
+        synchronized (clientsSocket) {  // Synchronisation pour éviter les modifications concurrentes
+            Iterator<Socket> iterator = clientsSocket.iterator();
+            while (iterator.hasNext()) {
+                Socket so = iterator.next();
+                if (so != emetteur) {
+                    new Thread(() -> {
+                        try {
+                            PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
+                            protocol.setSender("SnakeGame Server " + so.getLocalAddress());
+                            protocol.setReceiver("SnakeGame Client " + so.getInetAddress());
+                            sortie.println(protocol.serialize());
+                        } catch (IOException e) {
+                            System.out.println("problème\n" + e);
+                        }
+                    }).start();
+                }
             }
         }
     }
+
 
     public void running_game(InputMap map) {
         // Création du jeu

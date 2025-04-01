@@ -18,7 +18,7 @@ public class MainServer {
 
     private static final String WEB_SERVER_ADRESS = "http://localhost:8080/Web/";
 
-    final List<String[]> serverList = new CopyOnWriteArrayList<>();
+    final List<String[]> serverList = Collections.synchronizedList(new ArrayList<>());
     private int port;
     private String ip;
     private int portServer;
@@ -179,17 +179,17 @@ public class MainServer {
 
     public void removeServer(String ip, int port) {
         synchronized (this.serverList) {
-            Iterator<String[]> iterator = this.serverList.iterator();
-            while (iterator.hasNext()) {
-                String[] server = iterator.next();
-                if (server[1].equals(ip) && Integer.parseInt(server[2]) == port) {
-                    iterator.remove();  // Retirer l'élément de la liste
-                    System.out.println("Serveur supprimé : " + ip + ":" + port);
-                    break;
-                }
+            boolean removed = serverList.removeIf(server ->
+                    server[1].equals(ip) && Integer.parseInt(server[2]) == port
+            );
+
+            if (removed) {
+                System.out.println("Serveur supprimé : " + ip + ":" + port);
+            } else {
+                System.out.println("Serveur non trouvé : " + ip + ":" + port);
             }
 
-            // Optionnel : Affichage de la liste des serveurs après suppression
+            // Affichage des serveurs restants
             for (int i = 0; i < serverList.size(); i++) {
                 System.out.println("Serveur " + i + " : " + serverList.get(i)[1] + ":" + serverList.get(i)[2]);
             }
