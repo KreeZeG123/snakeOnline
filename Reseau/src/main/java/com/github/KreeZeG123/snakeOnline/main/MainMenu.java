@@ -1,6 +1,5 @@
-package com.github.KreeZeG123.snakeOnline.view;
+package com.github.KreeZeG123.snakeOnline.main;
 
-import com.github.KreeZeG123.snakeOnline.main.Client;
 import com.github.KreeZeG123.snakeOnline.model.dto.StringMapDTO;
 import com.github.KreeZeG123.snakeOnline.model.dto.Protocol;
 import com.github.KreeZeG123.snakeOnline.model.dto.mainMenu.*;
@@ -612,7 +611,6 @@ public class MainMenu {
                 stringMapDTO
         );
         sortie.println(sendingDemandeInfoUserProtocol.serialize());
-        System.out.println("envoyé");
         String messageRecu;
         try{
             messageRecu = entree.readLine();
@@ -665,7 +663,6 @@ public class MainMenu {
                         this.skinChoisie = cosmetiqueID;
                     });
                     button.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
-                    System.out.println(this.skinChoisie + " vs " + cosmetiqueID);
                     if ( cosmetiqueID.equals(this.skinChoisie )){
                         button.setEnabled(false);
                     }

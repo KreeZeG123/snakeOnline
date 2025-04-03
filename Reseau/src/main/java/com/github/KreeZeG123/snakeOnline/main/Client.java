@@ -157,7 +157,4 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) {
-        new Client("0.0.0.0",4321, "test", null);
-    }
 }
