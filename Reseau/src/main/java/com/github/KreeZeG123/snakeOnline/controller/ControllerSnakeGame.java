@@ -48,6 +48,19 @@ public class ControllerSnakeGame extends AbstractController {
         int dx = centerPoint.x - this.viewSnakeGame.getjFrame().getSize().width / 2;
         int dy = centerPoint.y - this.viewSnakeGame.getjFrame().getSize().height / 2;
         this.viewSnakeGame.getjFrame().setLocation(dx, dy);
+
+        // Assombrir et afficher "En attente des joueurs"
+        Graphics g = panel.getGraphics();
+        g.setColor(new Color(0, 0, 0, 150)); // Noir semi-transparent
+        g.fillRect(0, 0, panel.getWidth(), panel.getHeight());
+
+        g.setColor(Color.WHITE); // Texte blanc
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        FontMetrics fm = g.getFontMetrics();
+        String message = "En attente des joueurs";
+        int x = (panel.getWidth() - fm.stringWidth(message)) / 2;
+        int y = (panel.getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+        g.drawString(message, x, y);
     }
 
     public void update(ArrayList<FeaturesSnake> snakes, ArrayList<FeaturesItem> items, String snakeInfos) {
@@ -68,5 +81,13 @@ public class ControllerSnakeGame extends AbstractController {
 
     public void leaveGame() {
         this.client.leaveGame();
+    }
+
+    public void setEndingScreenActive(boolean endingScreenActive) {
+        this.panel.setEndingScreenActive(endingScreenActive);
+    }
+
+    public void setWaitingScreenActive(boolean waitingScreenActive) {
+        this.panel.setWaitingScreenActive(waitingScreenActive);
     }
 }

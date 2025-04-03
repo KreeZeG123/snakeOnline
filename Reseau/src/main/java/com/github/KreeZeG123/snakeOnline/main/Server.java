@@ -21,6 +21,7 @@ public class Server {
     private final InputMap map;
     private final MainServer mainServer;
     private boolean serverIsOn;
+    private boolean gameStarted = false;
     private final Vector<Socket> clientsSocket;
     private ServerSocket serveurSocket;
     private final AtomicInteger nbJoueurs = new AtomicInteger(0);
@@ -169,6 +170,7 @@ public class Server {
             try {
                 // S'il y a assez de joueurs
                 if (nbJoueurs.get() == this.max_player && !gameIsFinished && clientsSocket != null && !clientsSocket.isEmpty()) {
+                    gameStarted = true;
                     this.snakeGame.step();
                     if (this.snakeGame.gameContinue()) {
                         // Prévenir les clients de la mise à jour
@@ -233,7 +235,7 @@ public class Server {
                     if (gameIsFinished) {
                         System.out.println("Server La partie est terminée.");
                         stop_serveur();
-                    } else {
+                    } else if (!gameStarted) {
                         System.out.println("En attente de joueurs...");
                     }
                 }
