@@ -15,7 +15,6 @@ public class InfoUserDTO extends MainMenuDTO{
     }
 
     public String getUserName() {
-        System.out.println(this.userName);
         return this.userName;
     }
 

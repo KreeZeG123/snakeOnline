@@ -119,7 +119,6 @@ public class Protocol {
 
         // Lire la réponse du serveur
         int responseCode = connection.getResponseCode();
-        System.out.println("HTTP Response Code: " + responseCode);
 
         // Lire la réponse du serveur
         StringBuilder response = new StringBuilder();
@@ -131,12 +130,12 @@ public class Protocol {
         }
 
         if ( responseCode != 200 ) {
+            System.out.println("HTTP Response Code: " + responseCode);
             return null;
         }
 
         // Désérialiser la réponse JSON en un objet Protocol
         String jsonResponse = response.toString();
-        System.out.println(jsonResponse);
         return Protocol.deserialize(jsonResponse);
     }
 }

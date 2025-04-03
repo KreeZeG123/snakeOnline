@@ -3,9 +3,7 @@ package com.github.KreeZeG123.snakeOnline.view;
 
 import com.github.KreeZeG123.snakeOnline.utils.*;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 
@@ -50,6 +48,9 @@ public class PanelSnakeGame extends JPanel{
 
 	
 	private boolean[][] walls;
+
+	boolean isWaitingScreenActive = true;
+	boolean isEndingScreenActive = false;
 	
 	
 	int cpt;
@@ -113,6 +114,36 @@ public class PanelSnakeGame extends JPanel{
 		for(int i = 0; i < featuresItems.size(); i++){
 			paint_Item(g,featuresItems.get(i));	
 		}
+
+		if ( isWaitingScreenActive ) {
+			// Assombrir l'écran avec un overlay semi-transparent
+			g.setColor(new Color(0, 0, 0, 150)); // Noir semi-transparent
+			g.fillRect(0, 0, fen_x, fen_y);
+
+			// Afficher le texte "En attente des joueurs"
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("Arial", Font.BOLD, 24));
+			FontMetrics fm = g.getFontMetrics();
+			String message = "En attente des joueurs";
+			int x = (fen_x - fm.stringWidth(message)) / 2;
+			int y = (fen_y - fm.getHeight()) / 2 + fm.getAscent();
+			g.drawString(message, x, y);
+		}
+
+		if ( isEndingScreenActive ) {
+			// Assombrir l'écran avec un overlay semi-transparent
+			g.setColor(new Color(0, 0, 0, 150)); // Noir semi-transparent
+			g.fillRect(0, 0, fen_x, fen_y);
+
+			// Afficher le texte "En attente des joueurs"
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("Arial", Font.BOLD, 24));
+			FontMetrics fm = g.getFontMetrics();
+			String message = "Fin de la partie";
+			int x = (fen_x - fm.stringWidth(message)) / 2;
+			int y = (fen_y - fm.getHeight()) / 2 + fm.getAscent();
+			g.drawString(message, x, y);
+		}
 			
 		cpt++;
 	}
@@ -170,10 +201,7 @@ public class PanelSnakeGame extends JPanel{
 			try {
 				// Utiliser le ClassLoader pour charger l'image
 				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-				System.out.println("skin : " + skin);
-				System.out.println("cpt_img : " + cpt_img);
 				String imagePath = "images/snake_" + skin + "_" + cpt_img + ".png";
-				System.out.println("img : " + imagePath);
 				URL imageUrl = classLoader.getResource(imagePath);
 				if (imageUrl == null) {
 					throw new IOException("Image non trouvée dans le classpath : " + imagePath);
@@ -181,7 +209,6 @@ public class PanelSnakeGame extends JPanel{
 				// Charger l'image
 				img = ImageIO.read(imageUrl);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -310,8 +337,15 @@ public class PanelSnakeGame extends JPanel{
 		return sizeY;
 	}
 
-
 	public ArrayList<FeaturesItem> getFeaturesItems() {
 		return featuresItems;
+	}
+
+	public void setEndingScreenActive(boolean endingScreenActive) {
+		isEndingScreenActive = endingScreenActive;
+	}
+
+	public void setWaitingScreenActive(boolean waitingScreenActive) {
+		isWaitingScreenActive = waitingScreenActive;
 	}
 }

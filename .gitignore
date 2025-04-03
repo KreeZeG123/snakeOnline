@@ -15,7 +15,8 @@ Web/.sts4-cache
 Web/WEB-INF/classes/
 Web/build/
 Web/target/
-Web/src/main/webapp/WEB-INF/classes/.gitignore
+Web/src/main/webapp/WEB-INF/classes/
+
 
 ### Reseau (Maven sous IntelliJ IDEA) ###
 

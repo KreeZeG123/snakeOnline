@@ -206,7 +206,6 @@ public class MainMenu {
                             nbPieces = infoUserDTO.getNbPieces();
                             cosmetiques = infoUserDTO.getCosmetiques();
                             userName = infoUserDTO.getUserName();
-                            System.out.println("USername : " + userName);
                             setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
                             loginLabel.setText("");
                             loginErrorLabel.setText("");
@@ -366,7 +365,6 @@ public class MainMenu {
                         String messageRecu = entree.readLine();
                         Protocol receivedProtocol = Protocol.deserialize(messageRecu);
                         String message = receivedProtocol.getMessage();
-                        System.out.println(messageRecu);
                         switch (message) {
                             case "MainServerInscriptionAcknowledged":
                                 System.out.println("Inscription acceptée");
@@ -374,7 +372,6 @@ public class MainMenu {
                                 nbPieces = infoUserDTO.getNbPieces();
                                 cosmetiques = infoUserDTO.getCosmetiques();
                                 userName = infoUserDTO.getUserName();
-                                System.out.println("USername : " + userName);
                                 setPartyPanel(partyPanel,gbc,cardLayout,cardPanel,profilPanel);
                                 cardLayout.show(cardPanel, "partyPanel");
                                 break;
@@ -487,9 +484,7 @@ public class MainMenu {
         profilButton.setFont(subtitleFont);
 
         profilButton.addActionListener(actionEvent -> {
-            System.out.println("test");
             updateCosmetiques(profilPanel, gbc);
-            System.out.println("profilPanel");
             cardLayout.show(cardPanel, "profilPanel");
         });
 
@@ -594,14 +589,12 @@ public class MainMenu {
         Component[] components = profilPanel.getComponents();
         for (int i = 0 ; i < components.length ; i++){
             if (components[i] instanceof JButton && ((JButton) components[i]).getText().equals("Se Deconnecter")){
-                System.out.println("logout : " + i);
+
             }
         }
     }
 
     public void updateCosmetiques(JPanel profilPanel, GridBagConstraints gbc){
-        System.out.println("updateCosmetique");
-        System.out.println("username : " + this.userName);
         ImageIcon imageIcon;
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -661,28 +654,24 @@ public class MainMenu {
             // Ajout btn skins unlocked
             for (String cosmetiqueID : cosmetiquesList){
                 URL imageUrl = classLoader.getResource("skins/snake_skin_" + cosmetiqueID + ".png" );
-                if (imageUrl == null) {
-                    System.out.println("⚠️ Image non trouvée : skins/snake_skin_" + cosmetiqueID + ".png");
-                } else {
-                    System.out.println("✔ Image trouvée : " + imageUrl);
-                }
-                assert imageUrl != null;
-                imageIcon = new ImageIcon(imageUrl);
-                JButton button = new JButton(imageIcon);
-                button.addActionListener(actionEvent -> {
-                    for (JButton b : btns){
-                       b.setEnabled(true);
+                if (imageUrl != null) {
+                    imageIcon = new ImageIcon(imageUrl);
+                    JButton button = new JButton(imageIcon);
+                    button.addActionListener(actionEvent -> {
+                        for (JButton b : btns){
+                            b.setEnabled(true);
+                        }
+                        button.setEnabled(false);
+                        this.skinChoisie = cosmetiqueID;
+                    });
+                    button.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+                    System.out.println(this.skinChoisie + " vs " + cosmetiqueID);
+                    if ( cosmetiqueID.equals(this.skinChoisie )){
+                        button.setEnabled(false);
                     }
-                    button.setEnabled(false);
-                    this.skinChoisie = cosmetiqueID;
-                });
-                button.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
-                System.out.println(this.skinChoisie + " vs " + cosmetiqueID);
-                if ( cosmetiqueID.equals(this.skinChoisie )){
-                    button.setEnabled(false);
+                    cosmetiqueGrid.add(button);
+                    btns.add(button);
                 }
-                cosmetiqueGrid.add(button);
-                btns.add(button);
             }
 
             profilPanel.add(cosmetiqueGrid,gbc);

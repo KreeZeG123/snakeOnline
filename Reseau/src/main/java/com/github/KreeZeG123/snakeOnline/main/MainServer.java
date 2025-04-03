@@ -64,7 +64,7 @@ public class MainServer {
                 PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
                 String message = entree.readLine();
                 Protocol receivedProtocol = Protocol.deserialize(message);
-                System.out.println("Main server a reçu : |" + message + "|");
+                System.out.println("Main server a reçu : |" + receivedProtocol.getMessage() + "|");
                 if(message == null){
                     System.out.println("Client déconnecté du main server" );
                     clients.remove(so);
@@ -109,7 +109,6 @@ public class MainServer {
                         break;
                     case "MainMenuClientInscription" :
                         System.out.println("Demande d'inscription");
-                        System.out.println(message);
 
                         // Remplace les infos du client par celle du serveur
                         receivedProtocol.setSender("MainServer");

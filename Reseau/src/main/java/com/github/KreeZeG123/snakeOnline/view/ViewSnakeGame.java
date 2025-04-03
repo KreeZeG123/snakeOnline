@@ -114,5 +114,12 @@ public class ViewSnakeGame extends AbstractView {
         this.jFrame.dispatchEvent(new WindowEvent(this.jFrame, WindowEvent.WINDOW_CLOSING));
     }
 
+    public void setEndingScreenActive(boolean endingScreenActive) {
+        this.panelSnakeGame.setEndingScreenActive(endingScreenActive);
+    }
+
+    public void setWaitingScreenActive(boolean waitingScreenActive) {
+        this.panelSnakeGame.setWaitingScreenActive(waitingScreenActive);
+    }
 
 }

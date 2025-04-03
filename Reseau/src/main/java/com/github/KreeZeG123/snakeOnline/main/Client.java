@@ -42,6 +42,7 @@ public class Client {
                     System.out.println("client a reçu : |" + receivedProtocol.getMessage() + "|");
                     switch (receivedProtocol.getMessage()) {
                         case "SnakeGameServerEndGame" : {
+                            this.controller.setEndingScreenActive(true);
                             this.controller.update(new ArrayList<>(), null, null);
                             System.out.println("Mainserver La partie est terminée.");
                             break;
@@ -54,6 +55,7 @@ public class Client {
                         case "SnakeGameServerUpdate" : {
                             // Extraction des informations
                             GameUpdateDTO gameUpdateDTO = receivedProtocol.getData();
+                            this.controller.setWaitingScreenActive(false);
                             this.controller.update(
                                     gameUpdateDTO.snakes,
                                     gameUpdateDTO.items,
