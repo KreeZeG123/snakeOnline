@@ -43,7 +43,7 @@ public class SnakeGame extends Game {
     /**
      * Gestion des input des joueurs pour la stratégie controlable
      */
-    private final Map<String, PlayerInput> playerInputs;
+    private final Map<Integer, PlayerInput> playerInputs;
 
     private int numberOfPlayers;
 
@@ -69,7 +69,7 @@ public class SnakeGame extends Game {
         this.playerInputs = new HashMap<>();
         for (int i = 0; i < this.numberOfPlayers; i++) {
             this.playerInputs.put(
-                    ColorSnake.values()[i].name(),
+                    i,
                     new PlayerInput("", true)
             );
         }
@@ -96,7 +96,7 @@ public class SnakeGame extends Game {
         ArrayList<FeaturesSnake> startSnakes = this.map.getStart_snakes();
         for (int i = 0; i < nbOfSnake; i++) {
             FeaturesSnake featuresSnake = startSnakes.get(i);
-            snakeAgents.add(SnakeFactory.createSnake(featuresSnake, this));
+            snakeAgents.add(SnakeFactory.createSnake(featuresSnake, this,i));
         }
         // Initialization des items
         this.items = new ArrayList<>();
@@ -430,16 +430,16 @@ public class SnakeGame extends Game {
     }
 
     // Méthode pour mettre à jour les entrées
-    public void updatePlayerInput(String player, String key, boolean used) {
-        if (playerInputs.containsKey(player)) {
-            playerInputs.get(player).setLastKey(key);
-            playerInputs.get(player).setUsed(used);
+    public void updatePlayerInput(int id, String key, boolean used) {
+        if (playerInputs.containsKey(id)) {
+            playerInputs.get(id).setLastKey(key);
+            playerInputs.get(id).setUsed(used);
         }
     }
 
     // Méthode pour récupérer l'entrée d'un joueur
-    public PlayerInput getPlayerInput(String player) {
-        return playerInputs.get(player);
+    public PlayerInput getPlayerInput(int id) {
+        return playerInputs.get(id);
     }
 
 
@@ -454,7 +454,9 @@ public class SnakeGame extends Game {
                                 snake.getLastAction(),
                                 snake.getColorSnake(),
                                 snake.getInvincibleTime() > 0,
-                                snake.getSickTime() > 0
+                                snake.getSickTime() > 0,
+                                snake.getId()
+
                         )
                 );
             }

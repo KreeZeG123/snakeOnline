@@ -25,7 +25,7 @@ public class Client {
 
     private Socket so;
     private ControllerSnakeGame controller;
-    private ColorSnake clientColor;
+    private int id;
 
     private PrintWriter sortieVersServeur;
 
@@ -82,8 +82,8 @@ public class Client {
     public void envoyerAction(String action) {
         try {
             PrintWriter sortie = new PrintWriter(so.getOutputStream(), true);
-
-            SnakeActionDTO newSnakeActionDTO = new SnakeActionDTO(action, this.clientColor);
+            System.out.println(this.id);
+            SnakeActionDTO newSnakeActionDTO = new SnakeActionDTO(action, this.id);
             Protocol snakeActionProtocol = new Protocol(
                     "SnakeGame Client " + so.getLocalAddress(),
                     "SnakeGame Server " + so.getInetAddress(),
@@ -143,10 +143,10 @@ public class Client {
 
             // Création de la map
             InputMap inputMap = new InputMap(startGameDTO);
-            this.clientColor = startGameDTO.clientColor;
+            this.id = startGameDTO.id;
 
             // Création de l'affichage
-            this.controller = new ControllerSnakeGame(inputMap, this, skinChoisie);
+            this.controller = new ControllerSnakeGame(inputMap, this, skinChoisie, id );
 
             // On crée un thread pour écouter les messages du serveur quand la partie est en cours
             Thread threadEcoute = new Thread(this::gestion_reception_in_game);

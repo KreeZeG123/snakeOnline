@@ -319,6 +319,7 @@ public class MainMenu {
         JPasswordField passwordField1 = new JPasswordField();
         passwordField1.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
         passwordField1.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
+        passwordField1.setFont(inputFont);
 
         JLabel passwordLabel2 = new JLabel("Password (Confirm) :");
         passwordLabel2.setFont(new Font("Arial", Font.PLAIN, 15));
@@ -330,7 +331,6 @@ public class MainMenu {
         JPasswordField passwordField2 = new JPasswordField();
         passwordField2.setMaximumSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
         passwordField2.setPreferredSize(new Dimension(TAILLE_INPUT_X,TAILLE_INPUT_Y));
-
         passwordField2.setFont(inputFont);
 
         JButton registerButton2 = new JButton("S'inscrire");

@@ -5,18 +5,18 @@ import com.github.KreeZeG123.snakeOnline.utils.ColorSnake;
 
 public class SnakeActionDTO extends SnakeGameDTO {
     public String action;
-    public ColorSnake colorSnake;
+    public int id;
 
-    public SnakeActionDTO(String action, ColorSnake colorSnake) {
+    public SnakeActionDTO(String action, int id) {
         this.action = action;
-        this.colorSnake = colorSnake;
+        this.id = id;
     }
 
     @Override
     public String toString() {
         return "ActionData{" +
-                "action='" + action + '\'' +
-                ", colorSnake=" + colorSnake +
+                "action='" + this.action + '\'' +
+                ", id=" + this.id +
                 '}';
     }
 }

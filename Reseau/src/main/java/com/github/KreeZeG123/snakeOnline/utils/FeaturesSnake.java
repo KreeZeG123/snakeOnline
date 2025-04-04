@@ -16,8 +16,10 @@ public class FeaturesSnake {
 	
 	boolean isInvincible;
 	boolean isSick;
+
+	int id;
 	
-	public FeaturesSnake(ArrayList<Position> positions, AgentAction lastAction, ColorSnake colorSnake, boolean isInvincible, boolean isSick) {
+	public FeaturesSnake(ArrayList<Position> positions, AgentAction lastAction, ColorSnake colorSnake, boolean isInvincible, boolean isSick, int id) {
 		
 		this.positions = positions;
 		this.colorSnake = colorSnake;
@@ -26,6 +28,7 @@ public class FeaturesSnake {
 		this.isInvincible = isInvincible;
 		
 		this.isSick = isSick;
+		this.id = id;
 		
 	}
 		
@@ -79,5 +82,8 @@ public class FeaturesSnake {
 	public void setLastAction(AgentAction lastAction) {
 		this.lastAction = lastAction;
 	}
+
+	public int getId() { return id; }
+
 
 }

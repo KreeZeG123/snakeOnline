@@ -23,12 +23,12 @@ public class ControllerSnakeGame extends AbstractController {
      * Constructeur de la classe ControllerSnakeGame
      *
      */
-    public ControllerSnakeGame(InputMap map, Client client, String skinChoisie) {
+    public ControllerSnakeGame(InputMap map, Client client, String skinChoisie, int playerID) {
         super();
         this.client = client;
 
         // Initialisation de l'affichage
-        panel = new PanelSnakeGame(map.getSizeX(), map.getSizeY(), map.get_walls(), map.getStart_snakes(), map.getStart_items(), skinChoisie);
+        panel = new PanelSnakeGame(map.getSizeX(), map.getSizeY(), map.get_walls(), map.getStart_snakes(), map.getStart_items(), skinChoisie,playerID);
         this.viewSnakeGame = new ViewSnakeGame(this,panel);
         // Met la fenêtre commande en visible pour l'afficher par-dessus le jeu
         panel.paint(panel.getGraphics());

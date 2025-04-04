@@ -53,16 +53,14 @@ public class Server {
                                 StringMapDTO stringMapDTO = receivedProtocol.getData();
                                 String playerName = stringMapDTO.get("username");
 
-                                ColorSnake snakeColor = ColorSnake.values()[nbJoueurs.get()];
-
                                 // Ajout dans la liste des jouers
-                                this.players.put(snakeColor.toString(), playerName);
+                                this.players.put(String.valueOf(nbJoueurs), playerName);
 
 
                                 // Envoi des informations de début de partie
                                 GameStartDTO gameStartDTO = new GameStartDTO(
                                         this.map,
-                                        snakeColor
+                                        nbJoueurs.get()
                                 );
                                 Protocol gameStartProtocol = new Protocol(
                                         "SnakeGame Server " + so.getLocalAddress(),
@@ -92,9 +90,9 @@ public class Server {
 
                                 // Extraction des informations
                                 SnakeActionDTO snakeActionDTO = receivedProtocol.getData();
-
+                                System.out.println(snakeActionDTO.id);
                                 this.snakeGame.updatePlayerInput(
-                                        snakeActionDTO.colorSnake.name(),
+                                        snakeActionDTO.id,
                                         snakeActionDTO.action,
                                         false
                                 );

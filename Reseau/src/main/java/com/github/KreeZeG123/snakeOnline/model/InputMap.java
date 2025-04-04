@@ -119,7 +119,7 @@ public class InputMap implements Serializable {
 						ArrayList<Position> pos = new ArrayList<Position>();
 						pos.add(new Position(x,y));
 
-						start_snakes.add(new FeaturesSnake(pos, AgentAction.MOVE_DOWN,colorSnake[id%colorSnake.length], false, false));
+						start_snakes.add(new FeaturesSnake(pos, AgentAction.MOVE_DOWN,colorSnake[id%colorSnake.length], false, false,id));
 						id++;
 					}
 

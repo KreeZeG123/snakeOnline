@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SnakeFactory {
 
-    public static Snake createSnake(FeaturesSnake featuresSnake, SnakeGame snakeGame) {
+    public static Snake createSnake(FeaturesSnake featuresSnake, SnakeGame snakeGame, int id) {
 
         // Copy des positions du Snake
         Position pos = featuresSnake.getPositions().get(0);
@@ -22,7 +22,8 @@ public class SnakeFactory {
                 new ArrayList<>(List.of(posCopy)),
                 featuresSnake.getLastAction(),
                 featuresSnake.getColorSnake(),
-                snakeGame
+                snakeGame,
+                id
         );
 
         return newSnake;

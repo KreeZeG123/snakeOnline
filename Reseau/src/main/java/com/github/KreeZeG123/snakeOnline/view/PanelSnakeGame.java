@@ -49,13 +49,14 @@ public class PanelSnakeGame extends JPanel{
 	
 	private boolean[][] walls;
 
-	boolean isWaitingScreenActive = true;
-	boolean isEndingScreenActive = false;
-	
+	private boolean isWaitingScreenActive = true;
+	private boolean isEndingScreenActive = false;
+
+	private int playerID;
 	
 	int cpt;
 
-	public PanelSnakeGame(int sizeX, int sizeY, boolean[][] walls, ArrayList<FeaturesSnake> featuresSnakes, ArrayList<FeaturesItem> featuresItems, String skinChoisie) {
+	public PanelSnakeGame(int sizeX, int sizeY, boolean[][] walls, ArrayList<FeaturesSnake> featuresSnakes, ArrayList<FeaturesItem> featuresItems, String skinChoisie, int playerID) {
 
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
@@ -63,6 +64,7 @@ public class PanelSnakeGame extends JPanel{
 		this.featuresSnakes = featuresSnakes;
 		this.featuresItems = featuresItems;
 		this.skinChoisie = skinChoisie;
+		this.playerID = playerID;
 	}
 
 	public void paint(Graphics g){
@@ -108,7 +110,7 @@ public class PanelSnakeGame extends JPanel{
 		}
 
 		for(int i = 0; i < featuresSnakes.size(); i++){
-			paint_Snake(g,featuresSnakes.get(i));	
+			paint_Snake(g,featuresSnakes.get(i));
 		}
 
 		for(int i = 0; i < featuresItems.size(); i++){
@@ -165,7 +167,7 @@ public class PanelSnakeGame extends JPanel{
 		int cpt_img = -1;
 		
 		String skin = featuresSnake.getColorSnake().toString().toLowerCase();
-		if ( skinChoisie != null && !skinChoisie.isBlank() ) {
+		if ( skinChoisie != null && !skinChoisie.isBlank() && featuresSnake.getId() == playerID ) {
 			skin = "skin_" + skinChoisie;
 		}
 		

@@ -15,13 +15,15 @@ public class Snake {
     private int sickTime;
     private boolean dead;
     private final SnakeGame game;
+    private final int id;
 
-    public Snake(ArrayList<Position> positions, AgentAction lastAction, ColorSnake color, SnakeGame game) {
+    public Snake(ArrayList<Position> positions, AgentAction lastAction, ColorSnake color, SnakeGame game, int id) {
         this.positions = positions;
         this.lastAction = lastAction;
         this.colorSnake = color;
         this.dead = false;
         this.game = game;
+        this.id = id;
     }
 
     public void move(Position newPos) {
@@ -43,7 +45,7 @@ public class Snake {
         AgentAction action = this.getLastAction();
 
         // Récupérer les informations de la dernière touche pressée pour ce joueur
-        PlayerInput input = ((SnakeGame) this.game).getPlayerInput(this.colorSnake.name());
+        PlayerInput input = ((SnakeGame) this.game).getPlayerInput(this.id);
 
         // Si une touche a été pressée
         if (input != null && input.getLastKey() != null) {
@@ -168,4 +170,6 @@ public class Snake {
     public int getPoints() {
         return this.positions.size() - 1;
     }
+
+    public int getId(){return this.id;}
 }
