@@ -6,6 +6,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
 import model.dao.factory.DAOFactory;
+import model.dao.factory.DAOFactoryImpl;
 
 @WebListener
 public class InitialisationDaoFactory implements ServletContextListener {
@@ -19,7 +20,7 @@ public class InitialisationDaoFactory implements ServletContextListener {
         /* Récupération du ServletContext lors du chargement de l'application */
         ServletContext servletContext = event.getServletContext();
         /* Instanciation de notre DAOFactory */
-        this.daoFactory = DAOFactory.getInstance();
+        this.daoFactory = DAOFactoryImpl.getInstance();
         /* Enregistrement dans un attribut ayant pour portée toute l'application */
         servletContext.setAttribute( ATT_DAO_FACTORY, this.daoFactory );
     }

@@ -34,7 +34,8 @@ public class ServletProfil extends HttpServlet {
 	private ItemDAO itemDao;
     
     public void init() throws ServletException{
-    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	// Récupère la DAOFactory depuis le servletContext
+    	DAOFactory daoFactory = DAOFactory.getInstanceFromContext( this.getServletContext() );
     	this.joueurDAO = daoFactory.getJoueurDao();
     	this.itemDao = daoFactory.getItemDAO();
 	}
