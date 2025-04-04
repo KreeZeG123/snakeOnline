@@ -37,7 +37,8 @@ public class ServletBoutique extends HttpServlet {
 	private ItemDAO itemDAO;
     
     public void init() throws ServletException{
-    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	// Récupère la DAOFactory depuis le servletContext
+    	DAOFactory daoFactory = DAOFactory.getInstanceFromContext( this.getServletContext() );
     	this.joueurDAO = daoFactory.getJoueurDao();
     	this.itemDAO = daoFactory.getItemDAO();
 	}

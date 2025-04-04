@@ -11,12 +11,12 @@ import java.util.List;
 import model.beans.Joueur;
 import model.dao.interfaces.JoueurDao;
 import model.dao.exceptions.DAOException;
-import model.dao.factory.DAOFactory;
+import model.dao.factory.DAOFactoryImpl;
 import model.dao.utils.DAOUtilitaire;
 
 public class JoueurDaoImpl implements JoueurDao {
 	
-	private DAOFactory daoFactory;
+	private DAOFactoryImpl daoFactory;
 	
 	private static final String SQL_SELECT_PAR_ID = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE id = ?";
 	private static final String SQL_SELECT_PAR_USERNAME = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE BINARY username = ?";
@@ -26,7 +26,7 @@ public class JoueurDaoImpl implements JoueurDao {
 	private static final String SQL_SELECT_CLASSEMENT_PAR_SCORE = "SELECT username, score FROM joueurs ORDER BY score DESC LIMIT ?";
 	private static final String SQL_SELECT_JOUEURS_BY_USERNAMES = "SELECT id, username, mot_de_passe, email, nb_pieces, skins, score, date_inscription FROM joueurs WHERE BINARY username IN (?)";
 	
-    public JoueurDaoImpl( DAOFactory daoFactory ) {
+    public JoueurDaoImpl( DAOFactoryImpl daoFactory ) {
         this.daoFactory = daoFactory;
     }
     

@@ -30,7 +30,8 @@ public class ServletClassement extends HttpServlet {
 	private JoueurDao joueurDAO;
     
     public void init() throws ServletException{
-    	DAOFactory daoFactory = DAOFactory.getInstance();
+    	// Récupère la DAOFactory depuis le servletContext
+    	DAOFactory daoFactory = DAOFactory.getInstanceFromContext( this.getServletContext() );
     	this.joueurDAO = daoFactory.getJoueurDao();
 	}
 

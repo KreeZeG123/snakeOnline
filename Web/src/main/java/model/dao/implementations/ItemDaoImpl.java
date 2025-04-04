@@ -10,19 +10,19 @@ import java.util.List;
 
 import model.beans.Item;
 import model.dao.exceptions.DAOException;
-import model.dao.factory.DAOFactory;
+import model.dao.factory.DAOFactoryImpl;
 import model.dao.interfaces.ItemDAO;
 import model.dao.utils.DAOUtilitaire;
 
 public class ItemDaoImpl implements ItemDAO{
-	private DAOFactory daoFactory;
+	private DAOFactoryImpl daoFactory;
 	
 	private static final String SQL_SELECT_ITEMS = "SELECT id, title, description, price, image FROM items";
 	private static final String SQL_SELECT_ITEMS_BY_ID = "SELECT id, title, description, price, image FROM items WHERE id IN (?)";
 	private static final String SQL_SELECT_ITEM_BY_ID = "SELECT id, title, description, price, image FROM items WHERE id = ?";
 
 	
-    public ItemDaoImpl( DAOFactory daoFactory ) {
+    public ItemDaoImpl( DAOFactoryImpl daoFactory ) {
         this.daoFactory = daoFactory;
     }
     
